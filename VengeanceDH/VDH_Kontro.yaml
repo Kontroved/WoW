@@ -2,8 +2,8 @@ version: 0.2
 author: Kontroved
 spec: 581
 name: Vengeance
-description: "First Alpha Version of Vengeance Demon Hunter Rotation"
-
+description: Vengeance Demonhunter for M+ by Kontroved 
+    
 morphs:
   throw_glaive: reavers_glaive
 
