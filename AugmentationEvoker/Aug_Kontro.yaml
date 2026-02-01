@@ -2,7 +2,7 @@ version: 0.2
 author: Kontroved
 spec: 1473
 name: Augmentation
-description: First Alpha Version of Augmentation Evoker Rotation
+description: ALPHA Augmentation Rotation by Kontroved
 
 version: 3
 entry: main
@@ -133,3 +133,4 @@ lists:
     - call_action_list,name=scalecommander_aoe,if=active_enemies>=2
     - call_action_list,name=scalecommander_st
     # - call_action_list,name=scalecommander_st
+
