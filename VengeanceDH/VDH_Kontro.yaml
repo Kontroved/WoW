@@ -100,8 +100,8 @@ lists:
     - imprison.mouseover,if=interrupts.mouseover.stun.ready&mouseover.casting.elapsed>=0.2
       # AoE Interrupt
     - chaos_nova,if=interrupts.8y.stun.count>=2&interrupts.8y.stun.ready
-    - sigil_of_silence,if=interrupts.8y.count>=2&chaos_nova.cooldown.remains>gcd+1&interrupts.8y.ready
-    - sigil_of_misery,if=interrupts.8y.stun.count>=2&chaos_nova.cooldown.remains>gcd+1&interrupts.8y.stun.ready
+    - sigil_of_silence,if=interrupts.8y.count>=2&cooldown.chaos_nova.remains>gcd+1&interrupts.8y.ready
+    - sigil_of_misery,if=interrupts.8y.stun.count>=2&cooldown.chaos_nova.remains>gcd+1&interrupts.8y.stun.ready
 
   st_icy:
     - demon_spikes,name="Demon Spikes spam",if=config.features2.has(0)&buff.demon_spikes.remains<1
