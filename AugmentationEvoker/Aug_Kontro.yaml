@@ -1,8 +1,8 @@
-version: 0.2
+version: 1.0
 author: Kontroved
 spec: 1473
 name: Augmentation
-description: ALPHA Augmentation Rotation by Kontroved
+description: Augmentation Evoker by Kontroved
 
 version: 3
 entry: main
@@ -12,38 +12,33 @@ morphs:
 movement_allowed: buff.hover.up|buff.spatial_paradox.up
 
 config:
+  features2:
+    label: "Features"
+    type: multi_select
+    options:
+      - label: "Wing Buffet Interrupt (care knockback)"
+        value: 1
+      - label: "PreCombat"
+        value: 2
+      - label: "Breath of Eons Usage"
+        value: 3
+    default: [0,1,2,3] # No features enabled by default
   # Defensive Settings
-  defensive_1_hp_pct:
-    label: "Defensive 1 HP%"
+  blistering_scales_hp_pct:
+    label: "Blistering Scales HP%"
     type: slider
     min: 0
     max: 100
-    default: 50
+    default: 60
 
-  defensive_2_hp_pct:
-    label: "Defensive 2 HP%"
+  zephyr_members:
+    label: "Zephyr party/raid members"
     type: slider
     min: 0
-    max: 100
-    default: 50
-
-  defensive_3_hp_pct:
-    label: "Defensive 3 HP%"
-    type: slider
-    min: 0
-    max: 100
-    default: 50
-
+    max: 6
+    default: 6
+  
   # Rotation Settings
-  breath_of_eons:
-    label: "Breath of Eons Usage"
-    type: checkbox
-    default: false
-
-  enable_precombat:
-    label: "Enable Precombat"
-    type: checkbox
-    default: true
 
   fire_breath_rank:
     label: "Fire Breath Rank"
@@ -64,20 +59,34 @@ config:
     default: 0  # Default to first option (Rank 1)
 
 variables:
-
+  wing_buffet_usage: config.features2.has(1)
+  precombat_usage: config.features2.has(2)
+  breath_of_eons_usage: config.features2.has(3)
 
 lists:
   precombat:
     # Pre-combat abilities - executed when you target an enemy and are not in combat
     - prescience
-    - blistering_scales
     - ebon_might,if=buff.ebon_might.buff.down
+
+  dispels:
+    - expunge,if=player.dispelable.list
+    - expunge,cycle=members,if=cycle.dispelable.list
+    - cauterizing_flame,if=player.dispelable.list
+    - cauterizing_flame,cycle=members,if=cycle.dispelable.list
+
+  interrupts:
+    - quell,if=config.interrupt_target&(config.interrupt_all&target.casting.interruptible|interrupts.target.ready)&target.casting.elapsed>=0.2&(target.casting.remains<1|target.channeling)
+    - quell.mouseover,if=config.interrupt_mouseover&(config.interrupt_all&mouseover.casting.interruptible|interrupts.mouseover.ready)&interrupts.mouseover.ready&mouseover.casting.elapsed>=0.2&(mouseover.casting.remains<1|mouseover.channeling)
+    - quell.focus,if=config.interrupt_focus&(config.interrupt_all&focus.casting.interruptible|interrupts.focus.ready)&interrupts.focus.ready&focus.casting.elapsed>=0.2&(focus.casting.remains<1|focus.channeling)
+    
+    - tail_swipe,if=interrupts.8y.stun.count>=2|interrupts.8y.count>=2
+    - wing_buffet,if=(interrupts.8y.count>=2|interrupts.8y.stun.count>=2)&cooldown.tail_swipe.remains>gcd+1&target.range>3&wing_buffet_usage
 
   defensives:
     # Defensive abilities with HP thresholds
-    - use_defensive_1,if=player.health.percent<config.defensive_1_hp_pct
-    - use_defensive_2,if=player.health.percent<config.defensive_2_hp_pct
-    - use_defensive_3,if=player.health.percent<config.defensive_3_hp_pct
+    - zephyr,if=group.count(cycle.health.pct<80)>=config.zephyr_members
+    - obsidian_scales,if=player.health.pct<config.blistering_scales_hp_pct&!buff.obsidian_scales.up
 
   fb:
     - fire_breath,if=(!player.moving|buff.tip_the_scales.buff.up)&buff.ebon_might.buff.remains>1
@@ -87,50 +96,49 @@ lists:
 
   uh:
     - upheaval,if=(!player.moving|buff.tip_the_scales.buff.up)&buff.ebon_might.buff.remains>1&cooldown.fire_breath.remains>12
-    - upheaval,name="UH1",ignore_usable=true,ignore_cooldown=true,casting_check=upheaval,if=player.empower_stage>=1&(config.upheaval_rank=0|buff.ebon_might.buff.remains<=2|active_enemies=1)
+    - upheaval,name="UH1",ignore_usable=true,ignore_cooldown=true,casting_check=upheaval,if=player.empower_stage>=2&(config.upheaval_rank=0|buff.ebon_might.buff.remains<=2|active_enemies=1)
     - upheaval,name="UH2",ignore_usable=true,ignore_cooldown=true,casting_check=upheaval,if=player.empower_stage>=3&(buff.ebon_might.buff.remains>2&config.upheaval_rank=1)
     - upheaval,name="UH3",ignore_usable=true,ignore_cooldown=true,casting_check=upheaval,if=player.empower_stage>=4&(buff.ebon_might.buff.remains>2&config.upheaval_rank=2)
 
   bombardment_spread:
-    - target_enemy,"first tab",ignore_gcd=true,delay=1600,casting_check=eruption,if=active_enemies>=2&buff.mass_eruption.stack=2
-    - hover,name="back",hotkey=15,modifier=42,delay=1700,casting_check=eruption,if=active_enemies>=2&buff.mass_eruption.stack=1
+    - target_enemy,name="first tab",ignore_gcd=true,delay=1600,casting_check=eruption,if=active_enemies>=2&buff.mass_eruption.stack=2
+    - target_enemy,name="back",hotkey=15,modifier=42,delay=1700,casting_check=eruption,if=active_enemies>=2&buff.mass_eruption.stack=1
 
   scalecommander_st:
     - prescience,name="Prescience (Buff Maintenance)",if=buff.prescience.remains<3
-    - ebon_might,name="Ebon Might (Buff Maintenance)",if=buff.ebon_might.buff.remains<3
-    - breath_of_eons,name="Breath of Eons (ST - 1)",if=config.breath_of_eons&buff.ebon_might.buff.remains>2&cooldown.fire_breath.ready&!player.moving
-    #- tip_the_scales,name="Tip the Scales (ST - 2)"
+    - ebon_might,name="Ebon Might (Buff Maintenance)",if=buff.ebon_might.buff.remains<4
+    - breath_of_eons,ignore_usable=true,name="Breath of Eons (ST - 1)",if=breath_of_eons_usage&buff.ebon_might.buff.remains>2&cooldown.fire_breath.ready&!player.moving
+    - tip_the_scales,name="Tip the Scales (ST - 2)",if=prev_gcd.1.fire_breath|!talent.molten_embers
     - call_action_list,name=fb
     - call_action_list,name=uh
     - eruption,name="Eruption (ST - 7)",if=buff.ebon_might.buff.up|essence=essence.max|buff.essence_burst.stack=buff.essence_burst.max
-    - blistering_scales,name="Blistering Scales (ST - 8)",if=tanks.lowest.buff.blistering_scales.down
-    - living_flame,name="Living Flame (ST - 9)",if=action.living_flame.cast_time>cooldown.ebon_might.buff.remains
+    - blistering_scales,cycle=tanks,if=cycle.buff.blistering_scales.down
+    - living_flame,name="Living Flame (ST - 9)"
     - azure_strike,name="Azure Strike (ST - 10)"
 
   scalecommander_aoe:
     - prescience,name="Prescience (Buff Maintenance)",if=buff.prescience.remains<3
-    - ebon_might,name="Ebon Might (Buff Maintenance)",if=buff.ebon_might.buff.remains<3
-    - breath_of_eons,name="Breath of Eons (AOE - 1)",if=config.breath_of_eons&buff.ebon_might.remains>2&cooldown.fire_breath.remains<=2&!player.moving
-    - tip_the_scales,name="Tip the Scales (AOE - 2)"
+    - ebon_might,name="Ebon Might (Buff Maintenance)",if=buff.ebon_might.buff.remains<4
+    - breath_of_eons,ignore_usable=true,name="Breath of Eons (AOE - 1)",if=breath_of_eons_usage&buff.ebon_might.buff.remains>2&cooldown.fire_breath.remains<=2&!player.moving
+    - tip_the_scales,name="Tip the Scales (AOE - 2)",if=prev_gcd.1.fire_breath|!talent.molten_embers
     - call_action_list,name=fb
     - call_action_list,name=uh
     - call_action_list,name=bombardment_spread,if=active_enemies>=2&buff.mass_eruption.stack>=1
     - eruption,name="Eruption (AOE - 7)",if=buff.ebon_might.buff.up|essence=essence.max|buff.essence_burst.stack=buff.essence_burst.max
-    - blistering_scales,name="Blistering Scales (AOE - 8)",if=tanks.lowest.buff.blistering_scales.down
-    - living_flame,name="Living Flame (AOE - 9)",if=action.living_flame.cast_time>cooldown.ebon_might.buff.remains
+    - blistering_scales,cycle=tanks,if=cycle.buff.blistering_scales.down
+    - living_flame,name="Living Flame (AOE - 9)"
     - azure_strike,name="Azure Strike (AOE - 10)"
-
+    
   main:
-    #- target_enemy,"first tab",ignore_gcd=true,delay=7600,casting_check=eruption,if=active_enemies>=2&buff.mass_eruption.stack=2
-    #- hover,name="back",hotkey=15,modifier=42,delay=1700,casting_check=eruption,if=active_enemies>=2&buff.mass_eruption.stack=1
+    - breath_of_eons,ignore_usable=true,name="Suicide Breath",if=breath_of_eons_usage&buff.ebon_might.buff.remains>2&cooldown.fire_breath.remains<=2&!player.moving&player.combat
     - call_action_list,name=spell_queue
     - call_action_list,name=sanity_checks
-   # - call_action_list,name=auto_target_ranged
-    - call_action_list,name=precombat,if=target.enemy&target.alive&!player.combat&config.enable_precombat
+    - call_action_list,name=auto_target_ranged
+    - call_action_list,name=precombat,if=target.enemy&target.alive&!player.combat&precombat_usage
+    - call_action_list,name=interrupts
     - call_action_list,name=defensives
     - return,if=!target.valid
     - return,if=!player.combat
     - call_action_list,name=scalecommander_aoe,if=active_enemies>=2
     - call_action_list,name=scalecommander_st
     # - call_action_list,name=scalecommander_st
-
