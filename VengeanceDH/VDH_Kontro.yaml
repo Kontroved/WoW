@@ -1,9 +1,9 @@
-version: 0.2
+version: 1.0
 author: Kontroved
 spec: 581
 name: Vengeance
-description: Vengeance Demonhunter for M+ by Kontroved 
-    
+description: "First Alpha Version of Vengeance Demon Hunter Rotation"
+
 morphs:
   throw_glaive: reavers_glaive
 
@@ -96,15 +96,15 @@ lists:
     - disrupt.mouseover,if=config.interrupt_mouseover&(config.interrupt_all&mouseover.casting.interruptible|interrupts.mouseover.ready)&interrupts.mouseover.ready&mouseover.casting.elapsed>=0.2&(mouseover.casting.remains<1|mouseover.channeling)
     - disrupt.focus,if=config.interrupt_focus&(config.interrupt_all&focus.casting.interruptible|interrupts.focus.ready)&interrupts.focus.ready&focus.casting.elapsed>=0.2&(focus.casting.remains<1|focus.channeling)
       # CC Interrupt
-    - imprison,if=interrupts.target.stun.ready&target.casting.elapsed>=0.2
-    - imprison.mouseover,if=interrupts.mouseover.stun.ready&mouseover.casting.elapsed>=0.2
+    - imprison,if=interrupts.target.stun.ready&target.casting.elapsed>=0.5
+    - imprison.mouseover,if=interrupts.mouseover.stun.ready&mouseover.casting.elapsed>=0.5
       # AoE Interrupt
-    - chaos_nova,if=interrupts.8y.stun.count>=2&interrupts.8y.stun.ready
-    - sigil_of_silence,if=interrupts.8y.count>=2&cooldown.chaos_nova.remains>gcd+1&interrupts.8y.ready
-    - sigil_of_misery,if=interrupts.8y.stun.count>=2&cooldown.chaos_nova.remains>gcd+1&interrupts.8y.stun.ready
+    - chaos_nova,if=interrupts.8y.stun.count>=2|interrupts.8y.count>=2
+    - sigil_of_silence,if=interrupts.8y.count>=2&cooldown.chaos_nova.remains>gcd+1
+    - sigil_of_misery,if=(interrupts.8y.stun.count>=2|interrupts.8y.count>=2)&cooldown.chaos_nova.remains>gcd+1
 
   st_icy:
-    - demon_spikes,name="Demon Spikes spam",if=config.features2.has(0)&buff.demon_spikes.remains<1
+    - demon_spikes,name="Demon Spikes spam",if=config.features2.has(0)&buff.demon_spikes.remains<1&!buff.demon_spikes.up
     - infernal_strike.player,name="Infernal Strike (ST - Icy Veins)",if=cooldown.infernal_strike.charges_fractional>=1.8&config.features2.has(7)&enemies.8y>=1&!player.moving
     - fiery_brand,name="Fiery Brand (ST - Icy Veins)",if=!debuff.fiery_brand.up&config.features2.has(2)&fight_remains>ttd_cd_usage&cooldown.fiery_brand.charges_fractional>=1.7
     - metamorphosis,name="Metamorphosis (ST - Icy Veins)",if=!buff.metamorphosis.up&config.features2.has(1)&fight_remains>ttd_cd_usage&buff.voidfall.stack<2&debuff.fiery_brand.remains>4
@@ -123,7 +123,7 @@ lists:
     - throw_glaive,name="Throw Glaive (ST - Icy Veins)"
 
   aoe_icy:
-    - demon_spikes,name="AOE 1 - Demon Spikes (Spam)",if=config.features2.has(0)&buff.demon_spikes.remains<1
+    - demon_spikes,name="AOE 1 - Demon Spikes (Spam)",if=config.features2.has(0)&!buff.demon_spikes.up
     - infernal_strike.player,name="AOE 2 - Infernal Strike (Charge Spend)",if=cooldown.infernal_strike.charges_fractional>=1.8&config.features2.has(7)&enemies.8y>=1&!player.moving
     - fiery_brand,name="AOE 3 - Fiery Brand (Buff/Damage)",if=!debuff.fiery_brand.up&config.features2.has(2)&fight_remains>ttd_cd_usage&cooldown.fiery_brand.charges_fractional>=1.7
     - metamorphosis,name="AOE 4 - Metamorphosis (Buff/CD)",if=!buff.metamorphosis.up&config.features2.has(1)&fight_remains>ttd_cd_usage&buff.voidfall.stack<2&debuff.fiery_brand.remains>4
@@ -143,7 +143,7 @@ lists:
     - throw_glaive,name="AOE 17 - Throw Glaive (Filler)"
 
   st:
-    - demon_spikes,name="Demon Spikes spam",if=config.features2.has(0)&buff.demon_spikes.remains<1
+    - demon_spikes,name="Demon Spikes spam",if=config.features2.has(0)&!buff.demon_spikes.up
     - infernal_strike.player,name="Infernal Strike (ST - 1)",if=cooldown.infernal_strike.charges_fractional>=1.8&config.features2.has(7)&enemies.8y>=1&!player.moving
     - metamorphosis,if=!buff.metamorphosis.up&config.features2.has(1)&fight_remains>ttd_cd_usage&cooldown.spirit_bomb.remains>10
     - fracture,name="Fracture (ST - 3)",if=cooldown.fracture.charges_fractional>=1.8
