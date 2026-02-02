@@ -6,6 +6,7 @@ I will constantly develop the rotations asap.
 ## Done:
 
 ### Vengeance Demonhunter:
+1.0: Official Release
 0.2: Updated VDH rotation with current Guides. Interrupts and stuns implemented.
 
 Features: 
