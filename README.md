@@ -15,6 +15,17 @@ Features:
 - Detailed Option to adapt playstyle
 - Defensive usage
 - Movement checks
+
+### Augmentation Evoker
+1.0 Official Release
+
+Features:
+- Bombardment-Spread
+- Dynamic Empowered-Spells
+- CC logic
+- Movement checks
+- Breath configurable
+- 
 ## In Development:
 
 ### Augmentation Evoker
