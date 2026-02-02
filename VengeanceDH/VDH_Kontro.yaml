@@ -1,4 +1,4 @@
-version: 1.1
+version: 1.0
 author: Kontroved
 spec: 581
 name: Vengeance
@@ -142,8 +142,8 @@ lists:
     - throw_glaive,name="AOE 17 - Throw Glaive (Filler)"
 
   taunt:
-    - torment,name="Taunt",if=target.threat<2&target.combat
-    - torment.mouseover,name="Taunt MO",if=mouseover.threat<2&mouseover.combat
+    - torment,name="Taunt",if=target.threat<2&target.combat&target.threat!=-1
+    - torment.mouseover,name="Taunt MO",if=mouseover.threat<2&mouseover.combat&mouseover.threat!=-1
     #- throw_glaive,name="Glaive/taunt",if=target.threat<2&target.combat
 
   main:
