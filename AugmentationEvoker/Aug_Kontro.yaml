@@ -141,4 +141,4 @@ lists:
     - return,if=!player.combat
     - call_action_list,name=scalecommander_aoe,if=active_enemies>=2
     - call_action_list,name=scalecommander_st
-    # - call_action_list,name=scalecommander_st
+
