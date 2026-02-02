@@ -13,21 +13,21 @@ config:
     type: multi_select
     options:
       - label: "Demon Spikes Spam"
-        value: 1
+        value: 0
       - label: "Meta DPS Usage"
-        value: 2
+        value: 1
       - label: "Fiery Brand Spam (DPS Boost)"
-        value: 3
+        value: 2
       - label: "Fel Devastation Movement Check"
-        value: 4
+        value: 3
       - label: "Sigil of Flame Movement Check"
-        value: 5
+        value: 4
       - label: "Felblade Melee Only"
-        value: 6
+        value: 5
       - label: "Pull MO Combat WIP"
-        value: 7
+        value: 6
       - label: "Infernal Strike player"
-        value: 8
+        value: 7
     default: [0,1,2,3,4,5,6,7]
   # Defensive Settings
   demon_spikes_hp_pct:
@@ -67,14 +67,14 @@ config:
 
 variables:
   ## Features at the top as they control behavior / logic in other variables
-  demon_spikes_spam: config.features2.has(1)
-  meta_dps_usage: config.features2.has(2)
-  fel_devastation_movementcheck: config.features2.has(4)
-  sigil_movement_check: config.features2.has(5)
-  felblade_melee_only: config.features2.has(6)
-  fiery_brand_spam: config.features2.has(3)
-  pull_mo_combat: config.features2.has(7)
-  infernal_strike_player: config.features2.has(8)
+  demon_spikes_spam: config.features2.has(0)
+  meta_dps_usage: config.features2.has(1)
+  fel_devastation_movementcheck: config.features2.has(3)
+  sigil_movement_check: config.features2.has(4)
+  felblade_melee_only: config.features2.has(5)
+  fiery_brand_spam: config.features2.has(2)
+  pull_mo_combat: config.features2.has(6)
+  infernal_strike_player: config.features2.has(7)
   ## State tracking
   has_defensive: buff.metamorphosis.up|debuff.fiery_brand.up
   soul_fragments: buff.soul_fragments.stack
@@ -104,7 +104,7 @@ lists:
     - sigil_of_misery,if=(interrupts.8y.stun.count>=2|interrupts.8y.count>=2)&cooldown.chaos_nova.remains>gcd+1
 
   st_icy:
-    - demon_spikes,name="Demon Spikes spam",if=config.features2.has(0)&buff.demon_spikes.remains<1&!buff.demon_spikes.up
+    - demon_spikes,name="Demon Spikes spam",if=config.features2.has(0)&!buff.demon_spikes.up
     - infernal_strike.player,name="Infernal Strike (ST - Icy Veins)",if=cooldown.infernal_strike.charges_fractional>=1.8&config.features2.has(7)&enemies.8y>=1&!player.moving
     - fiery_brand,name="Fiery Brand (ST - Icy Veins)",if=!debuff.fiery_brand.up&config.features2.has(2)&fight_remains>ttd_cd_usage&cooldown.fiery_brand.charges_fractional>=1.7
     - metamorphosis,name="Metamorphosis (ST - Icy Veins)",if=!buff.metamorphosis.up&config.features2.has(1)&fight_remains>ttd_cd_usage&buff.voidfall.stack<2&debuff.fiery_brand.remains>4
@@ -135,49 +135,15 @@ lists:
     - spirit_bomb,name="AOE 10 - Spirit Bomb (Fragment Spend)",if=buff.soul_fragments.stack>=5
     - soul_cleave,name="AOE 11 - Soul Cleave (Fragment Spend)",if=buff.soul_fragments.stack>=2
     - fel_devastation,name="AOE 12 - Fel Devastation (Fury Spend)",if=fury>=50&(!player.moving|!config.features2.has(3))&enemies.8y>=1
-    #&debuff.fiery_brand.remains>2
     - fracture,name="AOE 13 - Fracture (Generator)",if=buff.soul_fragments.stack<=4
     - sigil_of_flame.player,name="AOE 14 - Sigil of Flame (AOE Generator)",if=(!player.moving|!config.features2.has(4))&enemies.8y>=1&fury.deficit>=25
     - felblade,name="AOE 15 - Felblade (Fury Spend)",if=fury.deficit>15&(!target.range<5&|!config.features2.has(5))
     - soul_cleave,name="AOE 16 - Soul Cleave (Filler)",if=buff.soul_fragments.stack<=1
     - throw_glaive,name="AOE 17 - Throw Glaive (Filler)"
 
-  st:
-    - demon_spikes,name="Demon Spikes spam",if=config.features2.has(0)&!buff.demon_spikes.up
-    - infernal_strike.player,name="Infernal Strike (ST - 1)",if=cooldown.infernal_strike.charges_fractional>=1.8&config.features2.has(7)&enemies.8y>=1&!player.moving
-    - metamorphosis,if=!buff.metamorphosis.up&config.features2.has(1)&fight_remains>ttd_cd_usage&cooldown.spirit_bomb.remains>10
-    - fracture,name="Fracture (ST - 3)",if=cooldown.fracture.charges_fractional>=1.8
-    - spirit_bomb,name="Spirit Bomb (ST - 4)",if=buff.soul_fragments.stack>=4&debuff.fiery_brand.remains<4&active_enemies.8y>=1
-    - fiery_brand,name="Fiery Brand (ST - 5)",if=!debuff.fiery_brand.up&config.features2.has(2)&fight_remains>ttd_cd_usage
-    - spirit_bomb,name="Spirit Bomb (ST - 6)",if=buff.soul_fragments.stack=6
-    - immolation_aura,name="Immolation Aura (ST - 7)",if=fight_remains>ttd_cd_usage
-    - sigil_of_spite.player,name="Sigil of Spite (ST - 8)",if=buff.soul_fragments.stack<=4&!player.moving&active_enemies.8y>=1
-    - soul_cleave,name="Soul Cleave (ST - 9)",if=buff.soul_fragments.stack>=1
-    - fel_devastation,name="Fel Devastation (ST - 10)",if=fury>=50&(!player.moving|!config.features2.has(3))&enemies.8y>=1
-    - soul_cleave,name="Soul Cleave (ST - 11)",if=buff.soul_fragments.stack=0
-    - fracture,name="Fracture (ST - 12)",if=fury.deficit>20&buff.soul_fragments.stack<5
-    - felblade,name="Felblade (ST - 13)",if=fury.deficit>15&((config.features2.has(5)&target.range<5&)|!config.features2.has(5))
-    - throw_glaive,name="Throw Glaive (ST - 14)"
-  aoe:
-    - demon_spikes,name="Demon Spikes spam",if=config.features2.has(0)
-    - infernal_strike.player,name="Infernal Strike (AOE - 1)",if=cooldown.infernal_strike.charges_fractional>=1.8&config.features2.has(7)&enemies.8y>=1&!player.moving
-    - metamorphosis,name="Metamorphosis (AOE - 2)",if=!buff.metamorphosis.up&cooldown.spirit_bomb.remains>10&fight_remains>ttd_cd_usage
-    - fracture,name="Fracture (AOE - 3)",if=cooldown.fracture.charges_fractional>=1.8
-    - spirit_bomb,name="Spirit Bomb (AOE - 4)",if=buff.soul_fragments.stack>=4&debuff.fiery_brand.remains<5
-    - fiery_brand,name="Fiery Brand (AOE - 5)",if=!debuff.fiery_brand.up&fight_remains>ttd_cd_usage
-    - spirit_bomb,name="Spirit Bomb (AOE - 6)",if=buff.soul_fragments.stack=6
-    - immolation_aura,name="Immolation Aura (AOE - 7)",if=fight_remains>ttd_cd_usage
-    - sigil_of_flame.player,name="Sigil of Flame (AOE - 8)",if=(!player.moving|!config.features2.has(4))&enemies.8y>=1
-    - sigil_of_spite.player,name="Sigil of Spite (AOE - 9)",if=(buff.soul_fragments.stack<5&!player.moving)&enemies.8y>=1
-    - felblade,name="Felblade (AOE - 10)",if=buff.soul_fragments.stack=6&fury<40&((config.features2.has(5)&target.range<5&)|!config.features2.has(5))
-    - fel_devastation,name="Fel Devastation (AOE - 11)",if=(fury>=50&(!player.moving|!config.features2.has(3)))&enemies.8y>=1
-    - soul_cleave,name="Soul Cleave (AOE - 12)",if=buff.soul_fragments.stack>0
-    - fracture,name="Fracture (AOE - 13)",if=buff.soul_fragments.stack<5
-    - felblade,name="Felblade (AOE - 14)",if=fury.deficit>=15&((config.features2.has(5)&target.range<5&)|!config.features2.has(5))
-    - throw_glaive,name="Throw Glaive (AOE - 15)"
-
   taunt:
     - torment,name="Taunt",if=target.threat<2&target.combat
+    - torment.mouseover,name="Taunt MO",if=mouseover.threat<2&mouseover.combat
     #- throw_glaive,name="Glaive/taunt",if=target.threat<2&target.combat
 
   main:
