@@ -1,7 +1,7 @@
-version: 1.0
+version: 1.1
 author: Kontroved
 spec: 1473
-name: Augmentation
+name: AUG by Kontro
 description: Augmentation Evoker by Kontroved
 
 version: 3
@@ -64,16 +64,23 @@ variables:
   breath_of_eons_usage: config.features2.has(3)
 
 lists:
+  combat_checks:
+    - return,if=!target.valid&!((config.auto_combat.has(1)&target.quest_mob&target.enemy&!target.dead)|(config.auto_combat.has(2)&target.combat&target.enemy&!target.dead)|(config.auto_combat.has(3)&target.targeting_party&target.enemy&!target.dead))
+    - return,if=!target.valid&config.auto_combat.has(0)
+
   precombat:
     # Pre-combat abilities - executed when you target an enemy and are not in combat
     - prescience
     - ebon_might,if=buff.ebon_might.buff.down
 
   dispels:
+    - expunge,if=player.dispelable.list.expunge
     - expunge,if=player.dispelable.list
-    - expunge,cycle=members,if=cycle.dispelable.list
-    - cauterizing_flame,if=player.dispelable.list
-    - cauterizing_flame,cycle=members,if=cycle.dispelable.list
+    - expunge,if=target.dispelable.list.expunge
+    - expunge,if=target.dispelable.list
+    - expunge,cycle=members,if=cycle.dispelable.list.expunge
+    - cauterizing_flame,if=player.dispelable.list.cauterizing_flame
+    - cauterizing_flame,cycle=members,if=cycle.dispelable.list.cauterizing_flame
 
   interrupts:
     - quell,if=config.interrupt_target&(config.interrupt_all&target.casting.interruptible|interrupts.target.ready)&target.casting.elapsed>=0.2&(target.casting.remains<1|target.channeling)
@@ -133,12 +140,13 @@ lists:
     - breath_of_eons,ignore_usable=true,name="Suicide Breath",if=breath_of_eons_usage&buff.ebon_might.buff.remains>2&cooldown.fire_breath.remains<=2&!player.moving&player.combat
     - call_action_list,name=spell_queue
     - call_action_list,name=sanity_checks
-    - call_action_list,name=auto_target_ranged
     - call_action_list,name=precombat,if=target.enemy&target.alive&!player.combat&precombat_usage
+    - call_action_list,name=auto_target_ranged
+    - call_action_list,name=auto_heal
+    - call_action_list,name=combat_checks
     - call_action_list,name=interrupts
     - call_action_list,name=defensives
-    - return,if=!target.valid
-    - return,if=!player.combat
+    - call_action_list,name=dispels
     - call_action_list,name=scalecommander_aoe,if=active_enemies>=2
     - call_action_list,name=scalecommander_st
-
+    # - call_action_list,name=scalecommander_st
