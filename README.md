@@ -25,7 +25,8 @@ Features:
 - CC logic
 - Movement checks
 - Breath configurable
-- 
+- Pre-Combat Buff preperation
+
 ## In Development:
 
 ### Augmentation Evoker
