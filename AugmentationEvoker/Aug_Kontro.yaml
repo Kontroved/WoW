@@ -1,4 +1,4 @@
-version: 1.1
+version: 1.2
 author: Kontroved
 spec: 1473
 name: AUG by Kontro
@@ -100,7 +100,15 @@ lists:
     - fire_breath,name="FB1",ignore_usable=true,ignore_cooldown=true,casting_check=fire_breath,if=player.empower_stage>=2&(config.fire_breath_rank=0|buff.ebon_might.buff.remains<=2|talent.molten_embers)
     - fire_breath,name="FB2",ignore_usable=true,ignore_cooldown=true,casting_check=fire_breath,if=player.empower_stage>=3&(buff.ebon_might.buff.remains>2&config.fire_breath_rank=1)
     - fire_breath,name="FB3",ignore_usable=true,ignore_cooldown=true,casting_check=fire_breath,if=player.empower_stage>=4&(buff.ebon_might.buff.remains>2&config.fire_breath_rank=2)
-
+  fb_release:
+    - fire_breath,name="FB1",ignore_usable=true,ignore_cooldown=true,casting_check=fire_breath,if=player.empower_stage>=2&(config.fire_breath_rank=0|buff.ebon_might.buff.remains<=2|talent.molten_embers)
+    - fire_breath,name="FB2",ignore_usable=true,ignore_cooldown=true,casting_check=fire_breath,if=player.empower_stage>=3&(buff.ebon_might.buff.remains>2&config.fire_breath_rank=1)
+    - fire_breath,name="FB3",ignore_usable=true,ignore_cooldown=true,casting_check=fire_breath,if=player.empower_stage>=4&(buff.ebon_might.buff.remains>2&config.fire_breath_rank=2)
+  uh_release:
+    - upheaval,if=(!player.moving|buff.tip_the_scales.buff.up)&buff.ebon_might.buff.remains>1&cooldown.fire_breath.remains>12
+    - upheaval,name="UH1",ignore_usable=true,ignore_cooldown=true,casting_check=upheaval,if=player.empower_stage>=2&(config.upheaval_rank=0|buff.ebon_might.buff.remains<=2|active_enemies=1)
+    - upheaval,name="UH2",ignore_usable=true,ignore_cooldown=true,casting_check=upheaval,if=player.empower_stage>=3&(buff.ebon_might.buff.remains>2&config.upheaval_rank=1)
+    - upheaval,name="UH3",ignore_usable=true,ignore_cooldown=true,casting_check=upheaval,if=player.empower_stage>=4&(buff.ebon_might.buff.remains>2&config.upheaval_rank=2)
   uh:
     - upheaval,if=(!player.moving|buff.tip_the_scales.buff.up)&buff.ebon_might.buff.remains>1&cooldown.fire_breath.remains>12
     - upheaval,name="UH1",ignore_usable=true,ignore_cooldown=true,casting_check=upheaval,if=player.empower_stage>=2&(config.upheaval_rank=0|buff.ebon_might.buff.remains<=2|active_enemies=1)
@@ -114,7 +122,7 @@ lists:
   scalecommander_st:
     - prescience,name="Prescience (Buff Maintenance)",if=buff.prescience.remains<3
     - ebon_might,name="Ebon Might (Buff Maintenance)",if=buff.ebon_might.buff.remains<4
-    - breath_of_eons,ignore_usable=true,name="Breath of Eons (ST - 1)",if=breath_of_eons_usage&buff.ebon_might.buff.remains>2&cooldown.fire_breath.ready&!player.moving
+    - breath_of_eons,ignore_usable=true,name="Breath of Eons (ST - 1)",if=var.breath_of_eons_usage&buff.ebon_might.buff.remains>2&cooldown.fire_breath.ready&!player.moving
     - tip_the_scales,name="Tip the Scales (ST - 2)",if=prev_gcd.1.fire_breath|!talent.molten_embers
     - call_action_list,name=fb
     - call_action_list,name=uh
@@ -126,7 +134,7 @@ lists:
   scalecommander_aoe:
     - prescience,name="Prescience (Buff Maintenance)",if=buff.prescience.remains<3
     - ebon_might,name="Ebon Might (Buff Maintenance)",if=buff.ebon_might.buff.remains<4
-    - breath_of_eons,ignore_usable=true,name="Breath of Eons (AOE - 1)",if=breath_of_eons_usage&buff.ebon_might.buff.remains>2&cooldown.fire_breath.remains<=2&!player.moving
+    - breath_of_eons,ignore_usable=true,name="Breath of Eons (AOE - 1)",if=var.breath_of_eons_usage&buff.ebon_might.buff.remains>2&cooldown.fire_breath.remains<=2&!player.moving
     - tip_the_scales,name="Tip the Scales (AOE - 2)",if=prev_gcd.1.fire_breath|!talent.molten_embers
     - call_action_list,name=fb
     - call_action_list,name=uh
@@ -137,7 +145,9 @@ lists:
     - azure_strike,name="Azure Strike (AOE - 10)"
     
   main:
-    - breath_of_eons,ignore_usable=true,name="Suicide Breath",if=breath_of_eons_usage&buff.ebon_might.buff.remains>2&cooldown.fire_breath.remains<=2&!player.moving&player.combat
+    - breath_of_eons,ignore_usable=true,name="Suicide Breath",if=var.breath_of_eons_usage&buff.ebon_might.buff.remains>2&cooldown.fire_breath.remains<=2&!player.moving&player.combat
+    - call_action_list,name=fb_release
+    - call_action_list,name=uh_release
     - call_action_list,name=spell_queue
     - call_action_list,name=sanity_checks
     - call_action_list,name=precombat,if=target.enemy&target.alive&!player.combat&precombat_usage
