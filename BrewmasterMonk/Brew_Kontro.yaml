@@ -4,7 +4,6 @@ spec: 268
 name: TESTING BrewMonk by Kontro
 description: TESTING Brewmaster Monk Rotation by Kontroved
 
-version: 3
 entry: main
 
 morphs:
@@ -26,7 +25,6 @@ config:
       - label: "Taunt Usage (Keg & Provoke)"
         value: 2
     default: [0,1,2]
-  # Defensive Settings
   celestial_brew_hp_pct:
     label: "Celestial Brew HP %"
     type: slider
@@ -163,8 +161,3 @@ lists:
     - call_action_list,name=opener,if=combat.time<gcd*8&var.opener_usage
     - call_action_list,name=aoe,if=active_enemies>=2
     - call_action_list,name=st
-
-
-
-    #TODO Change provoke mouseover when keybind exist (Rubim)
-    # 
