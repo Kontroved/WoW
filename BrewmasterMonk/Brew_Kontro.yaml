@@ -2,7 +2,7 @@ version: 0.1
 author: Kontroved
 spec: 268
 name: TESTING BrewMonk by Kontro
-description: "TESTING Brewmaster Monk Rotation by Kontroved"
+description: TESTING Brewmaster Monk Rotation by Kontroved
 
 version: 3
 entry: main
