@@ -1,8 +1,8 @@
-version: 0.1
+version: 1.0
 author: Kontroved
 spec: 268
-name: TESTING BrewMonk by Kontro
-description: TESTING Brewmaster Monk Rotation by Kontroved
+name: BrewMonk by Kontro
+description: Brewmaster Monk Rotation by Kontroved
 
 entry: main
 
@@ -24,7 +24,9 @@ config:
         value: 1
       - label: "Taunt Usage (Keg & Provoke)"
         value: 2
-    default: [0,1,2]
+      - label: "Auto Swap (CC/Interrupt)"
+        value: 3
+    default: [0,1,2,3]
   # Defensive Settings
   celestial_brew_hp_pct:
     label: "Celestial Brew HP %"
@@ -62,14 +64,15 @@ variables:
     expel_harm_pct: config.expel_harm_pct
     light_stagger: stagger.pct<29
     moderate_stagger: stagger.pct>=30&stagger.pct<60
-    heavy_stagger: stagger.pct>=60
+    heavy_stagger: stagger.pct>=80
+    auto_swap: config.features.has(3)
 lists:
   combat_checks:
     - return,if=!target.valid&!((config.auto_combat.has(1)&target.quest_mob&target.enemy&!target.dead)|(config.auto_combat.has(2)&target.combat&target.enemy&!target.dead)|(config.auto_combat.has(3)&target.targeting_party&target.enemy&!target.dead))
     - return,if=!target.valid&config.auto_combat.has(0)
 
   defensives:
-    - purifying_brew,delay=500,name="Purifying Brew (High Charge)",if=cooldown.purifying_brew.charges_fractional>=1.8&stagger.pct>=10
+    - purifying_brew,delay=500,name="Purifying Brew (High Charge)",if=cooldown.purifying_brew.charges_fractional>=1.8&stagger.pct>=20
     - purifying_brew,name="Purifying Brew (Heavy Stagger)",if=var.heavy_stagger&cooldown.purifying_brew.charges_fractional>=1
     - celestial_brew,name="Celestial Brew",if=var.heavy_stagger|health.pct<=var.celestial_brew_pct
     - fortifying_brew,name="Fortifying Brew",if=health.pct<=var.fortifying_brew_pct|var.heavy_stagger
@@ -79,6 +82,9 @@ lists:
     - expel_harm,name="Expel Harm (30% HP)",if=health.pct<=30&energy>=15
 
   interrupts:
+    - target_enemy,name="auto_target Interrupt",if=(interrupts.5y.ready|interrupts.8y.count>=1)&!interrupts.target.ready&cooldown.spear_hand_strike.ready&enemies.inrange(5)>=1&var.auto_swap
+    - target_enemy,name="auto_target Stun",if=interrupts.10y.stun.ready&!interrupts.target.stun.ready&cooldown.paralysis.ready&enemies.inrange(10)>=1&var.auto_swap
+       # Primary Interrupt
     - spear_hand_strike,name="Interrupt Target",if=config.interrupt_target&(config.interrupt_all&target.casting.interruptible|interrupts.target.ready)&target.casting.elapsed>=0.2&(target.casting.remains<1|target.channeling)
     - spear_hand_strike.mouseover,name="Interrupt Mouseover",if=config.interrupt_mouseover&(config.interrupt_all&mouseover.casting.interruptible|interrupts.mouseover.ready)&interrupts.mouseover.ready&mouseover.casting.elapsed>=0.2&(mouseover.casting.remains<1|mouseover.channeling)
     - spear_hand_strike.focus,name="Interrupt Focus",if=config.interrupt_focus&(config.interrupt_all&focus.casting.interruptible|interrupts.focus.ready)&interrupts.focus.ready&focus.casting.elapsed>=0.2&(focus.casting.remains<1|focus.channeling)
@@ -86,15 +92,15 @@ lists:
     - paralysis,name="Paralysis Target (CC)",if=interrupts.target.stun.ready&target.casting.elapsed>=0.5
     #- paralysis.mouseover,name="Paralysis Mouseover (CC)",if=interrupts.mouseover.stun.ready&mouseover.casting.elapsed>=0.5
        # AoE Interrupt
-    - leg_sweep,name="Leg Sweep (AoE)",if=interrupts.8y.stun.count>=2|interrupts.8y.count>=2
+    - leg_sweep,name="Leg Sweep (AoE)",if=((interrupts.10y.stun.count>=2|interrupts.10y.count>=2)&talent.tiger_tail_sweep)|(interrupts.6y.stun.count>=2|interrupts.6y.count>=2)
 
   pre_combat:
-    - breath_of_fire,name="BoF Pre-Combat"range_check=none,if=!buff.charred_passions.up
+    - breath_of_fire,name="BoF Pre-Combat",range_check=none,if=!buff.charred_passions.up
     - rushing_jade_wind,name="RJW Pre-Combat",range_check=none,if=!buff.rushing_jade_wind.up
 
   taunt:
     - provoke,name="Taunt",if=target.threat<2&target.combat&target.threat!=-1
-    - provoke,name="Taunt MO",if=mouseover.threat<2&mouseover.combat&mouseover.threat!=-1
+    - provoke,name="Taunt MO",if=mouseover.threat<2&mouseover.combat&mouseover.threat!=-1&mouseover.exists
     #- keg_smash,name="Keg Taunt",if=target.threat<2&target.combat&target.threat!=-1&cooldown.provoke.remains>1
     #- keg_smash.mouseover,name="Keg Taunt MO",if=mouseover.threat<2&mouseover.combat&mouseover.threat!=-1&cooldown.provoke.remains>1
 
@@ -123,7 +129,7 @@ lists:
     - tiger_palm,name="Tiger Palm (ST Combo)",if=buff.blackout_combo.up
     - keg_smash,name="Keg Smash (ST shado_panw)",if=talent.flurry_strikes&cooldown.keg_smash.charges_fractional>=1.8
     - rushing_jade_wind,name="RJW (ST Before Keg)",if=cooldown.exploding_keg.remains<=gcd
-    - exploding_keg.player,name="Exploding Keg (ST)",if=(buff.rushing_jade_wind.up|!cooldown.rushing_jade_wind.up)|!talent.rushing_jade_wind
+    - exploding_keg.player,name="Exploding Keg (ST)",if=(buff.rushing_jade_wind.up|!cooldown.rushing_jade_wind.up)|!talent.rushing_jade_wind&active_enemies>=1
     - chi_burst,name="Chi Burst (ST shado_panw)",if=talent.flurry_strikes
     - keg_smash,name="Keg Smash (ST Main)"
     - rushing_jade_wind,name="RJW (ST Main)",if=!buff.rushing_jade_wind.up
@@ -141,7 +147,7 @@ lists:
     - keg_smash,name="Keg Smash (AoE shado_panw)",if=talent.flurry_strikes&cooldown.keg_smash.charges_fractional>=1.8
     - chi_burst,name="Chi Burst (AoE shado_panw)",if=talent.flurry_strikes
     - rushing_jade_wind,name="RJW (AoE Before Keg)",if=cooldown.exploding_keg.remains<=gcd
-    - exploding_keg.player,name="Exploding Keg (AoE)",if=(buff.rushing_jade_wind.up|!cooldown.rushing_jade_wind.up)|!talent.rushing_jade_wind
+    - exploding_keg.player,name="Exploding Keg (AoE)",if=(buff.rushing_jade_wind.up|!cooldown.rushing_jade_wind.up)|!talent.rushing_jade_wind&active_enemies>=1
     - keg_smash,name="Keg Smash (AoE Main)"
     - rushing_jade_wind,name="RJW (AoE Main)",if=!buff.rushing_jade_wind.up
     - spinning_crane_kick,name="Spinning Crane Kick (AoE)",if=cooldown.keg_smash.remains>gcd&(energy>=60|energy.time_to_60<=cooldown.keg_smash.remains)
@@ -154,18 +160,11 @@ lists:
     - call_action_list,name=auto_heal
     - call_action_list,name=pre_combat,if=target.enemy&target.alive&var.precombat_usage&!player.combat
     - call_action_list,name=combat_checks
-    - call_action_list,name=taunt, if=var.taunt_usage
+    - call_action_list,name=interrupts
     - call_action_list,name=auto_target
+    - call_action_list,name=taunt, if=var.taunt_usage
     - call_action_list,name=defensives
     - call_action_list,name=self_heals
-    - call_action_list,name=interrupts
     - call_action_list,name=opener,if=combat.time<gcd*8&var.opener_usage
     - call_action_list,name=aoe,if=active_enemies>=2
     - call_action_list,name=st
-
-
-
-    #TODO Change provoke mouseover when keybind exist (Rubim)
-    # Pheren beim healing
-    # taunts
-    # #
