@@ -20,6 +20,18 @@ Features:
 1.0 Official Release
 
 Features:
+- Automatic Bombardment Spread!!!
+- Dynamic Empowered spells
+- Manual rank selection aswell
+- CC logic
+- Movement checks
+- Breath configurable
+- Pre-Combat
+
+### Brewmaster Monk:
+1.0: Official Release
+
+Features:
 - Bombardment-Spread
 - Dynamic Empowered-Spells
 - CC logic
@@ -29,5 +41,4 @@ Features:
 
 ## In Development:
 
-### Brewmaster Monk:
-0.1: Testing Phase started
+### Devourer Demon-Hunter
