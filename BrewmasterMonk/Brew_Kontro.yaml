@@ -72,6 +72,7 @@ lists:
     - return,if=!target.valid&config.auto_combat.has(0)
 
   defensives:
+    - tigers_lust,name="Tiger's Lust",if=player.rooted
     - purifying_brew,delay=500,name="Purifying Brew (High Charge)",if=cooldown.purifying_brew.charges_fractional>=1.8&stagger.pct>=20
     - purifying_brew,name="Purifying Brew (Heavy Stagger)",if=var.heavy_stagger&cooldown.purifying_brew.charges_fractional>=1
     - celestial_brew,name="Celestial Brew",if=var.heavy_stagger|health.pct<=var.celestial_brew_pct
