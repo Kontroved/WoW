@@ -106,7 +106,7 @@ lists:
     - imprison.mouseover,if=interrupts.mouseover.stun.ready&mouseover.casting.elapsed>=0.5
       # AoE Interrupt
     - chaos_nova,if=interrupts.8y.stun.count>=2|interrupts.8y.count>=2
-    - sigil_of_silence,if=interrupts.8y.count>=2&cooldown.chaos_nova.remains>gcd+1
+    - sigil_of_silence.player,if=interrupts.8y.count>=2&cooldown.chaos_nova.remains>gcd+1
     - sigil_of_misery.player,if=(interrupts.8y.stun.count>=2|interrupts.8y.count>=2)&cooldown.chaos_nova.remains>gcd+1
 
   st_annihilation:
