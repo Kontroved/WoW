@@ -42,5 +42,5 @@ Features:
 - Pre-Combat Buff preperation
 
 ## In Development:
-
+### Survival Hunter
 ### Devourer Demon-Hunter
