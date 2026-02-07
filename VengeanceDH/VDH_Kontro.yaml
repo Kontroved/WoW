@@ -1,4 +1,4 @@
-version: 1.0
+version: 1.1
 author: Kontroved
 spec: 581
 name: Vengeance
@@ -6,7 +6,7 @@ description: "Vengeance Demon Hunter Rotation by Kontroved"
 
 morphs:
   throw_glaive: reavers_glaive
-
+  voidblade: pierce_the_veil
 config:
   features2:
     label: "Features"
@@ -28,7 +28,9 @@ config:
         value: 6
       - label: "Infernal Strike player"
         value: 7
-    default: [0,1,2,3,4,5,6,7]
+      - label: "Auto Swap (CC/Interrupt)"
+        value: 8
+    default: [0,1,2,3,4,5,6,7,8]
   # Defensive Settings
   demon_spikes_hp_pct:
     label: "Demon Spikes HP%"
@@ -66,7 +68,7 @@ config:
     default: 10
 
 variables:
-  ## Features at the top as they control behavior / logic in other variables
+  ## Features
   demon_spikes_spam: config.features2.has(0)
   meta_dps_usage: config.features2.has(1)
   fel_devastation_movementcheck: config.features2.has(3)
@@ -75,10 +77,11 @@ variables:
   fiery_brand_spam: config.features2.has(2)
   pull_mo_combat: config.features2.has(6)
   infernal_strike_player: config.features2.has(7)
+  auto_swap: config.features2.has(8)
   ## State tracking
   has_defensive: buff.metamorphosis.up|debuff.fiery_brand.up
   soul_fragments: buff.soul_fragments.stack
-  fel_met: (fury>=50&(!player.moving|!var.fiery_brand_spam))&enemies.8y>=1
+  fel_met: cooldown.fell_devastation.up&health.pct<=config.fel_devastation_hp_pct
 
 lists:
   combat_checks:
@@ -92,6 +95,9 @@ lists:
     - darkness,if=health.pct<=config.darkness_hp_pct&!buff.metamorphosis.up&!debuff.fiery_brand.up
 
   interrupts:
+    - target_enemy,name="auto_target Interrupt",if=(interrupts.10y.ready|interrupts.10y.count>=1)&!interrupts.target.ready&cooldown.disrupt.ready&enemies.inrange(10)>=1&var.auto_swap
+    #- target_enemy,name="auto_target Stun",if=interrupts.10y.stun.ready&!interrupts.target.stun.ready&cooldown.paralysis.ready&enemies.inrange(10)>=1&var.auto_swap
+
     - disrupt,if=config.interrupt_target&(config.interrupt_all&target.casting.interruptible|interrupts.target.ready)&target.casting.elapsed>=0.2&(target.casting.remains<1|target.channeling)
     - disrupt.mouseover,if=config.interrupt_mouseover&(config.interrupt_all&mouseover.casting.interruptible|interrupts.mouseover.ready)&interrupts.mouseover.ready&mouseover.casting.elapsed>=0.2&(mouseover.casting.remains<1|mouseover.channeling)
     - disrupt.focus,if=config.interrupt_focus&(config.interrupt_all&focus.casting.interruptible|interrupts.focus.ready)&interrupts.focus.ready&focus.casting.elapsed>=0.2&(focus.casting.remains<1|focus.channeling)
@@ -101,9 +107,9 @@ lists:
       # AoE Interrupt
     - chaos_nova,if=interrupts.8y.stun.count>=2|interrupts.8y.count>=2
     - sigil_of_silence,if=interrupts.8y.count>=2&cooldown.chaos_nova.remains>gcd+1
-    - sigil_of_misery,if=(interrupts.8y.stun.count>=2|interrupts.8y.count>=2)&cooldown.chaos_nova.remains>gcd+1
+    - sigil_of_misery.player,if=(interrupts.8y.stun.count>=2|interrupts.8y.count>=2)&cooldown.chaos_nova.remains>gcd+1
 
-  st_icy:
+  st_annihilation:
     - demon_spikes,name="Demon Spikes spam",if=config.features2.has(0)&!buff.demon_spikes.up
     - infernal_strike.player,name="Infernal Strike (ST - Icy Veins)",if=cooldown.infernal_strike.charges_fractional>=1.8&config.features2.has(7)&enemies.8y>=1&!player.moving
     - fiery_brand,name="Fiery Brand (ST - Icy Veins)",if=!debuff.fiery_brand.up&config.features2.has(2)&fight_remains>ttd_cd_usage&cooldown.fiery_brand.charges_fractional>=1.7
@@ -113,16 +119,16 @@ lists:
     - sigil_of_spite.player,name="Sigil of Spite (ST - Icy Veins)",if=!player.moving&active_enemies>=1
     - fracture,name="Fracture (ST - Icy Veins)",if=cooldown.fracture.charges_fractional>=1.7
     - immolation_aura,name="Immolation Aura (ST - Icy Veins)",if=fight_remains>ttd_cd_usage
+    - fel_devastation,name="Fel Devastation (ST - Icy Veins)",if=fury>=50&(!player.moving|!config.features2.has(3))&enemies.8y>=1
     - spirit_bomb,name="Spirit Bomb (ST - Icy Veins)",if=buff.soul_fragments.stack>=5
     - soul_cleave,name="Soul Cleave (ST - Icy Veins)",if=buff.soul_fragments.stack>=2
     - fracture,name="Fracture (ST - Icy Veins)",if=buff.soul_fragments.stack<=4
-    - fel_devastation,name="Fel Devastation (ST - Icy Veins)",if=fury>=50&(!player.moving|!config.features2.has(3))&enemies.8y>=1
     - sigil_of_flame.player,name="Sigil of Flame (ST - Icy Veins)",if=(!player.moving|!config.features2.has(4))&active_enemies.8y>=1&fury.deficit>=25
-    - felblade,name="Felblade (ST - Icy Veins)",if=fury.deficit>15&(!target.range<5&|!config.features2.has(5))
-    - soul_cleave,name="Soul Cleave Filler (ST - Icy Veins)",if=buff.soul_fragments.stack<=1
+    - felblade,name="Felblade (ST - Icy Veins)",if=fury.deficit>15&(target.range<5&|!config.features2.has(5))
+    - soul_cleave,name="Soul Cleave Filler (ST - Icy Veins)",if=buff.soul_fragments.stack<=1&fury>=85
     - throw_glaive,name="Throw Glaive (ST - Icy Veins)"
 
-  aoe_icy:
+  aoe_annihilation:
     - demon_spikes,name="AOE 1 - Demon Spikes (Spam)",if=config.features2.has(0)&!buff.demon_spikes.up
     - infernal_strike.player,name="AOE 2 - Infernal Strike (Charge Spend)",if=cooldown.infernal_strike.charges_fractional>=1.8&config.features2.has(7)&enemies.8y>=1&!player.moving
     - fiery_brand,name="AOE 3 - Fiery Brand (Buff/Damage)",if=!debuff.fiery_brand.up&config.features2.has(2)&fight_remains>ttd_cd_usage&cooldown.fiery_brand.charges_fractional>=1.7
@@ -132,19 +138,61 @@ lists:
     - sigil_of_spite.player,name="AOE 7 - Sigil of Spite (Generator)",if=!player.moving&active_enemies>=1
     - fracture,name="AOE 8 - Fracture (Generator)",if=cooldown.fracture.charges_fractional>=1.7
     - immolation_aura,name="AOE 9 - Immolation Aura (AOE Damage)",if=fight_remains>ttd_cd_usage&buff.soul_fragments.stack<=4
+    - fel_devastation,name="AOE 12 - Fel Devastation (Fury Spend)",if=fury>=50&(!player.moving|!config.features2.has(3))&enemies.8y>=1
     - spirit_bomb,name="AOE 10 - Spirit Bomb (Fragment Spend)",if=buff.soul_fragments.stack>=5
     - soul_cleave,name="AOE 11 - Soul Cleave (Fragment Spend)",if=buff.soul_fragments.stack>=2
-    - fel_devastation,name="AOE 12 - Fel Devastation (Fury Spend)",if=fury>=50&(!player.moving|!config.features2.has(3))&enemies.8y>=1
     - fracture,name="AOE 13 - Fracture (Generator)",if=buff.soul_fragments.stack<=4
     - sigil_of_flame.player,name="AOE 14 - Sigil of Flame (AOE Generator)",if=(!player.moving|!config.features2.has(4))&enemies.8y>=1&fury.deficit>=25
-    - felblade,name="AOE 15 - Felblade (Fury Spend)",if=fury.deficit>15&(!target.range<5&|!config.features2.has(5))
-    - soul_cleave,name="AOE 16 - Soul Cleave (Filler)",if=buff.soul_fragments.stack<=1
+    - felblade,name="AOE 15 - Felblade (Fury Spend)",if=fury.deficit>15&(target.range<5&|!config.features2.has(5))
+    - soul_cleave,name="AOE 16 - Soul Cleave (Filler)",if=buff.soul_fragments.stack<=1&fury>=85
     - throw_glaive,name="AOE 17 - Throw Glaive (Filler)"
+
+  st_aldrachi:
+    - demon_spikes,name="ST 1 - Demon Spikes (spam)",if=config.features2.has(0)&!buff.demon_spikes.up
+    - infernal_strike.player,name="ST 2 - Infernal Strike (dump charges)",if=cooldown.infernal_strike.charges_fractional>=1.8&config.features2.has(7)&enemies.8y>=1&!player.moving
+    - metamorphosis,name="ST 3 - Metamorphosis (cooldown)",if=!buff.metamorphosis.up&config.features2.has(1)&fight_remains>ttd_cd_usage&fight_remains!=9999
+    - fracture,name="ST 4 - Fracture (avoid cap)",if=cooldown.fracture.charges_fractional>=1.7
+    - fracture,name="ST 5 - Fracture (rending strike)",if=buff.rending_strike.up
+    - spirit_bomb,name="ST 6 - Spirit Bomb (souls >=4, brand ending)",if=buff.soul_fragments.stack>=4&debuff.fiery_brand.remains>0&debuff.fiery_brand.remains<=2
+    - fiery_brand,name="ST 7 - Fiery Brand (apply)",if=config.features2.has(2)&!debuff.fiery_brand.up&fight_remains>ttd_cd_usage&fight_remains!=9999
+    - spirit_bomb,name="ST 8 - Spirit Bomb (souls >=6)",if=buff.soul_fragments.stack>=6
+    - soul_cleave,name="ST 9 - Soul Cleave (glaive flurry proc)",if=buff.glaive_flurry.up
+    - sigil_of_spite.player,name="ST 10 - Sigil of Spite (art of the glaive)",if=!player.moving&active_enemies>=1&buff.art_of_the_glaive.stack<=15
+    - reavers_glaive,name="ST 11 - Reaver's Glaive (enable rending/glaive flurry)",if=(!buff.rending_strike.up|!buff.glaive_flurry.up)
+    - immolation_aura,name="ST 12 - Immolation Aura (damage)",if=fight_remains>ttd_cd_usage&fight_remains!=9999
+    - fel_devastation,name="ST 13 - Fel Devastation (fury >=50)",if=fury>=50&(!player.moving|!config.features2.has(3))&enemies.8y>=1
+    - soul_cleave,name="ST 14 - Soul Cleave (souls >=1)",if=buff.soul_fragments.stack>=1
+    - soul_cleave,name="ST 15 - Soul Cleave (0 souls, fury dump)",if=buff.soul_fragments.stack=0&fury>=85
+    - fracture,name="ST 16 - Fracture (builder, safe cap)",if=fury.deficit>=25&buff.soul_fragments.stack<=4
+    - felblade,name="ST 17 - Felblade (safe cap)",if=fury.deficit>15&(target.range<5|!config.features2.has(5))
+    - throw_glaive,name="ST 18 - Throw Glaive (filler/kite)"
+
+  aoe_aldrachi:
+    - demon_spikes,name="AOE 1 - Demon Spikes (spam)",if=config.features2.has(0)&!buff.demon_spikes.up
+    - infernal_strike.player,name="AOE 2 - Infernal Strike (dump charges)",if=cooldown.infernal_strike.charges_fractional>=1.8&config.features2.has(7)&enemies.8y>=1&!player.moving
+    - metamorphosis,name="AOE 3 - Metamorphosis (spirit bomb cd >10)",if=!buff.metamorphosis.up&config.features2.has(1)&fight_remains>ttd_cd_usage&fight_remains!=9999&cooldown.spirit_bomb.remains>10
+    - fracture,name="AOE 4 - Fracture (avoid cap)",if=cooldown.fracture.charges_fractional>=1.7
+    - fracture,name="Fracture (Rending Strike)",if=buff.rending_strike.up
+    - soul_cleave,name="Soul Cleave (Glaive Flurry proc)",if=buff.glaive_flurry.up
+    - sigil_of_spite.player,name="ST 10 - Sigil of Spite (art of the glaive)",if=!player.moving&active_enemies>=1&buff.art_of_the_glaive.stack<=15
+    - reavers_glaive,name="Reaver's Glaive (enable Rending/Glaive Flurry)",if=(!buff.rending_strike.up|!buff.glaive_flurry.up)
+    - immolation_aura,name="Immolation Aura",if=fight_remains>ttd_cd_usage&fight_remains!=9999
+    - sigil_of_flame.player,name="Sigil of Flame (AOE)",if=(!player.moving|!config.features2.has(4))&enemies.8y>=1
+    - spirit_bomb,name="Spirit Bomb (4+ souls, Brand ending)",if=buff.soul_fragments.stack>=4&debuff.fiery_brand.remains>0&debuff.fiery_brand.remains<=2
+    - fiery_brand,name="Fiery Brand (apply)",if=config.features2.has(2)&!debuff.fiery_brand.up&fight_remains>ttd_cd_usage&fight_remains!=9999
+    - spirit_bomb,name="Spirit Bomb (6 souls)",if=buff.soul_fragments.stack>=6
+    - felblade,name="Felblade (6 souls, need fury)",if=buff.soul_fragments.stack>=6&fury<40&(target.range<5|!config.features2.has(5))
+    - fel_devastation,name="Fel Devastation (>=50 fury)",if=fury>=50&(!player.moving|!config.features2.has(3))&enemies.8y>=1
+    - soul_cleave,name="Soul Cleave (spend fury/souls)",if=fury>=40|buff.soul_fragments.stack>=1
+    - fracture,name="Fracture (filler)"
+    - felblade,name="Felblade (safe cap)",if=fury.deficit>15&(target.range<5|!config.features2.has(5))
+    - throw_glaive,name="Throw Glaive (filler/kite)"
+
+
 
   taunt:
     - torment,name="Taunt",if=target.threat<2&target.combat&target.threat!=-1
-    - torment.mouseover,name="Taunt MO",if=mouseover.threat<2&mouseover.combat&mouseover.threat!=-1
-    #- throw_glaive,name="Glaive/taunt",if=target.threat<2&target.combat
+    - torment.mouseover,name="Taunt MO",if=mouseover.threat<2&mouseover.combat&mouseover.threat!=-1&mouseover.exists
 
   main:
     - call_action_list,name=spell_queue
@@ -153,7 +201,10 @@ lists:
     - call_action_list,name=combat_checks
     - call_action_list,name=defensives
     - call_action_list,name=taunt
-    - call_action_list,name=auto_target
     - call_action_list,name=interrupts
-    - call_action_list,name=aoe_icy,if=enemies.8y>=2
-    - call_action_list,name=st_icy
+    - call_action_list,name=auto_target
+    - call_action_list,name=aoe_aldrachi,if=talent.art_of_the_glaive&enemies.8y>=2
+    - call_action_list,name=st_aldrachi,if=talent.art_of_the_glaive
+    - call_action_list,name=aoe_annihilation,if=enemies.8y>=2
+    - call_action_list,name=st_annihilation
+
