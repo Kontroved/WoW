@@ -26,7 +26,9 @@ config:
         value: 2
       - label: "Auto Swap (CC/Interrupt)"
         value: 3
-    default: [0,1,2,3]
+      - label: "Tigers Lust on roots"
+        value: 4
+    default: [0,1,2,3,4]
   # Defensive Settings
   celestial_brew_hp_pct:
     label: "Celestial Brew HP %"
@@ -60,6 +62,7 @@ variables:
     opener_usage: config.features.has(0)
     precombat_usage: config.features.has(1)
     taunt_usage: config.features.has(2)
+    tigers_lust_usage: config.features.has(4)
     celestial_brew_pct: config.celestial_brew_hp_pct
     expel_harm_pct: config.expel_harm_pct
     light_stagger: stagger.pct<29
@@ -72,7 +75,7 @@ lists:
     - return,if=!target.valid&config.auto_combat.has(0)
 
   defensives:
-    - tigers_lust,name="Tiger's Lust",if=player.rooted
+    - tigers_lust,name="Tiger's Lust",if=player.rooted&tigers_lust_usage
     - purifying_brew,delay=500,name="Purifying Brew (High Charge)",if=cooldown.purifying_brew.charges_fractional>=1.8&stagger.pct>=20
     - purifying_brew,name="Purifying Brew (Heavy Stagger)",if=var.heavy_stagger&cooldown.purifying_brew.charges_fractional>=1
     - celestial_brew,name="Celestial Brew",if=var.heavy_stagger|health.pct<=var.celestial_brew_pct
