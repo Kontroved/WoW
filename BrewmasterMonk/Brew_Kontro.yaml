@@ -154,7 +154,7 @@ lists:
     - tiger_palm,name="Tiger Palm (AoE Filler)",if=cooldown.keg_smash.remains>gcd&(energy>=80|energy.time_to_80<=cooldown.keg_smash.remains)
 
   main:
-    - call_action_list,name=pre_combat,if=target.enemy&target.alive&var.precombat_usage&!player.combat
+    - call_action_list,name=pre_combat,if=target.enemy&target.alive&var.precombat_usage&!player.combat&!state.rotation
     - call_action_list,name=spell_queue
     - call_action_list,name=sanity_checks
     - call_action_list,name=auto_heal
