@@ -121,7 +121,7 @@ lists:
     - tranquilizing_shot,if=target.target.has_magic_buff|target.target.has_magic_buff
     #- feign_death,if=
   st:
-    - hunters_mark,if=!target.debuff.hunters_mark.up&fight_remains>ttd_cd_usage&fight_remains!=9999
+    - hunters_mark,if=nameplates.debuff.hunters_mark.count=0&fight_remains>ttd_cd_usage&fight_remains!=9999
     - misdirection,ignore_usable=true,if=!buff.misdirection.up&target.threat>=2&var.misdirect_usage
     - kill_command, if=buff.tip_of_the_spear.remains<gcd|!buff.tip_of_the_spear.up
     - wildfire_bomb, if=debuff.sentinels_mark.remains>gcd|cooldown.wildfire_bomb.full_recharge_time<=6|nameplates.debuff.sentinels_mark.count>=1
@@ -156,3 +156,4 @@ lists:
     - call_action_list,name=self_heals
     - call_action_list,name=aoe,if=active_enemies>=2
     - call_action_list,name=st
+
