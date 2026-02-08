@@ -1,4 +1,4 @@
-version: 1.0
+version: 1.1
 author: Kontroved
 spec: 255
 name: Survival Hunter by Kontro
@@ -125,9 +125,9 @@ lists:
     - misdirection,ignore_usable=true,if=!buff.misdirection.up&target.threat>=2&var.misdirect_usage
     - kill_command, if=buff.tip_of_the_spear.remains<gcd|!buff.tip_of_the_spear.up
     - wildfire_bomb, if=debuff.sentinels_mark.remains>gcd|cooldown.wildfire_bomb.full_recharge_time<=6|nameplates.debuff.sentinels_mark.count>=1
-    - takedown, if=buff.tip_of_the_spear.up|(talent.twin_fangs&buff.tip_of_the_spear.stack=1)
+    - takedown, if=buff.tip_of_the_spear.up|(talent.twin_fangs&buff.tip_of_the_spear.stack=1)&target.range<=5
     - boomstick, if=cooldown.wildfire_bomb.full_recharge_time>9
-    - moonlight_chakram, if=!talent.stalk_and_strike|cooldown.wildfire_bomb.full_recharge_time>9
+    - moonlight_chakram, if=!talent.stalk_and_strike|cooldown.wildfire_bomb.full_recharge_time>9&target.range<=5
     - flamefang_pitch.player, if=(!talent.grenade_juggler|cooldown.wildfire_bomb.charges_fraction<=1.1)&enemies.8y>=1
     - raptor_strike
 
@@ -137,9 +137,9 @@ lists:
     - kill_command, if=buff.tip_of_the_spear.remains<gcd|!buff.tip_of_the_spear.up
     - wildfire_bomb, if=debuff.sentinels_mark.remains>gcd|cooldown.wildfire_bomb.full_recharge_time<=6|cooldown.boomstick.remains<(2*enemies.inrange(10))|nameplates.debuff.sentinels_mark.count>=1
     - boomstick, if=cooldown.wildfire_bomb.full_recharge_time>9
-    - takedown, if=(!talent.twin_fangs&buff.tip_of_the_spear.up)|(talent.twin_fangs&buff.tip_of_the_spear.stack=1)
+    - takedown, if=(!talent.twin_fangs&buff.tip_of_the_spear.up)|(talent.twin_fangs&buff.tip_of_the_spear.stack=1)&target.range<=5
     - wildfire_bomb, if=cooldown.wildfire_bomb.full_recharge_time<=1.5*gcd
-    - moonlight_chakram, if=!talent.stalk_and_strike|cooldown.wildfire_bomb.full_recharge_time>9
+    - moonlight_chakram, if=!talent.stalk_and_strike|cooldown.wildfire_bomb.full_recharge_time>9&target.range<=5
     - flamefang_pitch.player, if=(!talent.grenade_juggler|cooldown.wildfire_bomb.charges_fraction<=1.1)&enemies.8y>=1
     - raptor_strike
 
@@ -156,3 +156,4 @@ lists:
     - call_action_list,name=self_heals
     - call_action_list,name=aoe,if=active_enemies>=2
     - call_action_list,name=st
+
