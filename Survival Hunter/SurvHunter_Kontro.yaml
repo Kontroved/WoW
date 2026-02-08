@@ -1,14 +1,14 @@
-version: 0.2
+version: 1.0
 author: Kontroved
 spec: 255
-name: TESTING Survival Hunter by Kontro
-description: TESTING Survival Hunter Rotation by Kontroved
+name: Survival Hunter by Kontro
+description: Survival Hunter Rotation by Kontroved
 # talents: C8PAAAAAAAAAAAAAAAAAAAAAAMWgBmxohBwMgtZmZmZmZ2mHAAAAAAgZMjZYGDjZYZMNDAAAAYAAssNzYbGzMYMGAMAmxwMLA
 # Addon: Sentinel Hunter Tools
 entry: main
 
 morphs:
-
+  takedown: moonlight_chakram 
 
 movement_allowed:
 
@@ -95,15 +95,15 @@ lists:
     - exhilaration,if=health.pct<=exhilaration_hp_pct
 
   interrupts:
-    - target_enemy,name="auto_target Interrupt",if=(interrupts.5y.ready|interrupts.5y.count>=1)&!interrupts.target.ready&cooldown.muzzle.ready&enemies.inrange(5)>=1&var.auto_swap
-    - target_enemy,name="auto_target Stun",if=interrupts.10y.stun.ready&!interrupts.target.stun.ready&cooldown.intimidation.ready&enemies.inrange(10)>=1&var.auto_swap
-       # Primary Interrupt
-    - muzzle,name="Interrupt Target",if=config.interrupt_target&(config.interrupt_all&target.casting.interruptible|interrupts.target.ready)&target.casting.elapsed>=0.2&(target.casting.remains<1|target.channeling)
-    - muzzle.mouseover,name="Interrupt Mouseover",if=config.interrupt_mouseover&(config.interrupt_all&mouseover.casting.interruptible|interrupts.mouseover.ready)&interrupts.mouseover.ready&mouseover.casting.elapsed>=0.2&(mouseover.casting.remains<1|mouseover.channeling)
-    - muzzle.focus,name="Interrupt Focus",if=config.interrupt_focus&(config.interrupt_all&focus.casting.interruptible|interrupts.focus.ready)&interrupts.focus.ready&focus.casting.elapsed>=0.2&(focus.casting.remains<1|focus.channeling)
+      # Primary Interrupt
+    - muzzle,name="Interrupt Target",if=config.interrupt_target&((config.interrupt_all&target.casting.interruptible)|interrupts.target.ready)&target.casting.elapsed>=0.2&(target.casting.remains<1|target.channeling)
+    - muzzle.mouseover,name="Interrupt Mouseover",if=config.interrupt_mouseover&((config.interrupt_all&mouseover.casting.interruptible)|interrupts.mouseover.ready)&interrupts.mouseover.ready&mouseover.casting.elapsed>=0.2&(mouseover.casting.remains<1|mouseover.channeling)
+    - muzzle.focus,name="Interrupt Focus",if=config.interrupt_focus&((config.interrupt_all&focus.casting.interruptible)|interrupts.focus.ready)&interrupts.focus.ready&focus.casting.elapsed>=0.2&(focus.casting.remains<1|focus.channeling)
        # CC Interrupt
-    - intimidation,name="Stun Interrupt Target",if=interrupts.target.stun.ready&target.casting.elapsed>=0.5
-   
+    - intimidation,name="Stun Interrupt Target",if=interrupts.target.stun.ready&target.casting.elapsed>=0.1
+    - target_enemy,delay=100,name="auto_target Interrupt",if=(interrupts.8y.ready|interrupts.8y.count>=1)&!interrupts.target.ready&cooldown.muzzle.ready&enemies.inrange(5)>=1&var.auto_swap
+    - target_enemy,name="auto_target Stun",if=(interrupts.8y.stun.ready|interrupts.8y.coun>=1)&!interrupts.target.stun.ready&cooldown.intimidation.ready&enemies.inrange(10)>=1&var.auto_swap
+
   pre_combat:
     - hunters_mark,if=nameplates.debuff.hunters_mark.count=0
     - misdirection,ignore_usable=true,range_check=none,if=!buff.misdirection.up
@@ -125,10 +125,10 @@ lists:
     - misdirection,ignore_usable=true,if=!buff.misdirection.up&target.threat>=2&var.misdirect_usage
     - kill_command, if=buff.tip_of_the_spear.remains<gcd|!buff.tip_of_the_spear.up
     - wildfire_bomb, if=debuff.sentinels_mark.remains>gcd|cooldown.wildfire_bomb.full_recharge_time<=6|nameplates.debuff.sentinels_mark.count>=1
-    - takedown, if=buff.tip_of_the_spear.up
+    - takedown, if=buff.tip_of_the_spear.up|(talent.twin_fangs&buff.tip_of_the_spear.stack=1)
     - boomstick, if=cooldown.wildfire_bomb.full_recharge_time>9
-    - moonlight_chakram
-    - flamefang_pitch.player, if=cooldown.wildfire_bomb.charges_fraction<=1.1&enemies.8y>=1
+    - moonlight_chakram, if=!talent.stalk_and_strike|cooldown.wildfire_bomb.full_recharge_time>9
+    - flamefang_pitch.player, if=(!talent.grenade_juggler|cooldown.wildfire_bomb.charges_fraction<=1.1)&enemies.8y>=1
     - raptor_strike
 
   aoe:
@@ -137,10 +137,10 @@ lists:
     - kill_command, if=buff.tip_of_the_spear.remains<gcd|!buff.tip_of_the_spear.up
     - wildfire_bomb, if=debuff.sentinels_mark.remains>gcd|cooldown.wildfire_bomb.full_recharge_time<=6|cooldown.boomstick.remains<(2*enemies.inrange(10))|nameplates.debuff.sentinels_mark.count>=1
     - boomstick, if=cooldown.wildfire_bomb.full_recharge_time>9
-    - takedown, if=buff.tip_of_the_spear.up
+    - takedown, if=(!talent.twin_fangs&buff.tip_of_the_spear.up)|(talent.twin_fangs&buff.tip_of_the_spear.stack=1)
     - wildfire_bomb, if=cooldown.wildfire_bomb.full_recharge_time<=1.5*gcd
-    - moonlight_chakram
-    - flamefang_pitch.player, if=cooldown.wildfire_bomb.charges_fraction<=1.1&enemies.8y>=1
+    - moonlight_chakram, if=!talent.stalk_and_strike|cooldown.wildfire_bomb.full_recharge_time>9
+    - flamefang_pitch.player, if=(!talent.grenade_juggler|cooldown.wildfire_bomb.charges_fraction<=1.1)&enemies.8y>=1
     - raptor_strike
 
   main:
@@ -156,4 +156,3 @@ lists:
     - call_action_list,name=self_heals
     - call_action_list,name=aoe,if=active_enemies>=2
     - call_action_list,name=st
-
