@@ -145,7 +145,7 @@ lists:
 
   main:
     - call_action_list,name=spell_queue
-    - call_action_list,name=pet_stuff,if=state.rotation&!player.mounted
+    - call_action_list,name=pet_stuff,if=state.rotation&!player.mounted&player.alive
     - call_action_list,name=pre_combat,if=target.enemy&target.alive&var.pre_combat_usage&!player.combat&state.rotation
     - call_action_list,name=sanity_checks
     - call_action_list,name=auto_heal
@@ -156,4 +156,5 @@ lists:
     - call_action_list,name=self_heals
     - call_action_list,name=aoe,if=active_enemies>=2
     - call_action_list,name=st
+
 
