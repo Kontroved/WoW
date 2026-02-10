@@ -41,6 +41,16 @@ Features:
 - Breath configurable
 - Pre-Combat Buff preperation
 
+### Survival Hunter
+PLEASE check Discord for Misdirect instructions
+1.0: Release
+
+Features:
+- precombat (target enemy -> Huntersmark & Misdirect)
+- defensives (customizable)
+- CC & Interrupts
+- Auto-swap for CC (Interrupt & Intimidation) 
+
 ## In Development:
 ### Survival Hunter
 ### Devourer Demon-Hunter
