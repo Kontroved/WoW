@@ -43,6 +43,7 @@ Features:
 
 ### Survival Hunter
 PLEASE check Discord for Misdirect instructions
+
 1.0: Release
 
 Features:
