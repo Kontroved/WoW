@@ -6,6 +6,8 @@ I will constantly develop the rotations asap.
 ## Done:
 
 ### Vengeance Demonhunter:
+1.2: Midnight update
+
 1.1: Aldrachi support & auto swap (Interrupt)
 
 1.0: Official Release
