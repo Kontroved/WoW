@@ -54,6 +54,17 @@ Features:
 - CC & Interrupts
 - Auto-swap for CC (Interrupt & Intimidation) 
 
+## Protection Paladin
+
+1.0: Official Release
+
+Features: 
+- precombat (HP Stack)
+- defensives (customizable)
+- CC & Interrupts
+- Auto-swap for Interrupts
+- customizable DT logic
+- customizable Group-support
+
 ## In Development:
-### Survival Hunter
 ### Devourer Demon-Hunter
