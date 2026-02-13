@@ -1,17 +1,10 @@
-version: 1.1
+version: 1.3
 author: Kontroved
 spec: 255
 name: Survival Hunter by Kontro
 description: Survival Hunter Rotation by Kontroved
-# talents: C8PAAAAAAAAAAAAAAAAAAAAAAMWgBmxohBwMgtZmZmZmZ2mHAAAAAAgZMjZYGDjZYZMNDAAAAYAAssNzYbGzMYMGAMAmxwMLA
-# Addon: Sentinel Hunter Tools
+
 entry: main
-
-morphs:
-  takedown: moonlight_chakram 
-
-movement_allowed:
-
 config:
   features:
     label: "Features"
@@ -23,10 +16,10 @@ config:
         value: 1
       - label: "target swap (Interrupt & Stun)"
         value: 2
-    default: [0]
-  Pets:
+    default: [0,2]
+  pets:
     label: "Pets"
-    type: multi_select
+    type: dropdown
     options:
       - label: "Pet 1"
         value: 0
@@ -38,7 +31,7 @@ config:
         value: 3
       - label: "Pet 5"
         value: 4
-    default: [0]
+    default: 0
   # Defensive Settings
   survival_of_the_fittest_hp_pct:
     label: "Survival of the Fittest HP %"
@@ -58,7 +51,6 @@ config:
     min: 0
     max: 100
     default: 20
-
   ttd_cd_usage:
     label: "TTD CD Usage Threshold"
     type: slider
@@ -72,11 +64,11 @@ variables:
     pre_combat_usage: config.features.has(0)
     misdirect_usage: config.features.has(1)
     #pets
-    call_pet1: config.Pets.has(0)
-    call_pet2: config.Pets.has(1)
-    call_pet3: config.Pets.has(2)
-    call_pet4: config.Pets.has(3)
-    call_pet5: config.Pets.has(4)
+    call_pet1: config.pets.has(0)
+    call_pet2: config.pets.has(1)
+    call_pet3: config.pets.has(2)
+    call_pet4: config.pets.has(3)
+    call_pet5: config.pets.has(4)
     #defensives
     survival_of_the_fittest_hp_pct: config.survival_of_the_fittest_hp_pct
     roar_of_sacrifice_hp_pct: config.roar_of_sacrifice_hp_pct
@@ -101,8 +93,8 @@ lists:
     - muzzle.focus,name="Interrupt Focus",if=config.interrupt_focus&((config.interrupt_all&focus.casting.interruptible)|interrupts.focus.ready)&interrupts.focus.ready&focus.casting.elapsed>=0.2&(focus.casting.remains<1|focus.channeling)
        # CC Interrupt
     - intimidation,name="Stun Interrupt Target",if=interrupts.target.stun.ready&target.casting.elapsed>=0.1
-    - target_enemy,delay=100,name="auto_target Interrupt",if=(interrupts.8y.ready|interrupts.8y.count>=1)&!interrupts.target.ready&cooldown.muzzle.ready&enemies.inrange(5)>=1&var.auto_swap
-    - target_enemy,name="auto_target Stun",if=(interrupts.8y.stun.ready|interrupts.8y.coun>=1)&!interrupts.target.stun.ready&cooldown.intimidation.ready&enemies.inrange(10)>=1&var.auto_swap
+    - target_enemy,delay=100name="auto_target Stun",if=(interrupts.5y.stun.ready|interrupts.5y.stun.count>=1)&!interrupts.target.stun.ready&cooldown.intimidation.ready<1&enemies.inrange(5)>=1&var.auto_swap
+    - target_enemy,delay=100,name="auto_target Interrupt",if=(interrupts.5y.ready|interrupts.5y.count>=1)&!interrupts.target.ready&cooldown.muzzle.remais<1&enemies.inrange(5)>=1&var.auto_swap
 
   pre_combat:
     - hunters_mark,if=nameplates.debuff.hunters_mark.count=0
@@ -118,35 +110,57 @@ lists:
     - call_pet_5,ignore_usable=true,range_check=none,if=!pet.exists&var.call_pet5
 
   utility:
-    - tranquilizing_shot,if=target.target.has_magic_buff|target.target.has_magic_buff
-    #- feign_death,if=
-  st:
-    - hunters_mark,if=nameplates.debuff.hunters_mark.count=0&fight_remains>ttd_cd_usage&fight_remains!=9999
-    - misdirection,ignore_usable=true,if=!buff.misdirection.up&target.threat>=2&var.misdirect_usage
-    - kill_command, if=buff.tip_of_the_spear.remains<gcd|!buff.tip_of_the_spear.up
-    - wildfire_bomb, if=debuff.sentinels_mark.remains>gcd|cooldown.wildfire_bomb.full_recharge_time<=6|nameplates.debuff.sentinels_mark.count>=1
-    - takedown, if=buff.tip_of_the_spear.up|(talent.twin_fangs&buff.tip_of_the_spear.stack=1)&target.range<=5&!player.moving
-    - boomstick, if=cooldown.wildfire_bomb.full_recharge_time>9
-    - moonlight_chakram, if=!talent.stalk_and_strike|cooldown.wildfire_bomb.full_recharge_time>9&target.range<=5
-    - flamefang_pitch.player, if=(!talent.grenade_juggler|cooldown.wildfire_bomb.charges_fraction<=1.1)&enemies.8y>=1
-    - raptor_strike
+    - tranquilizing_shot,if=target.has_magic_buff|target.target.has_enrage
 
-  aoe:
-    - hunters_mark,if=nameplates.debuff.hunters_mark.count=0&fight_remains>ttd_cd_usage&fight_remains!=9999
-    - misdirection,ignore_usable=true,if=!buff.misdirection.up&target.threat>=2&var.misdirect_usage
-    - kill_command, if=buff.tip_of_the_spear.remains<gcd|!buff.tip_of_the_spear.up
-    - wildfire_bomb, if=debuff.sentinels_mark.remains>gcd|cooldown.wildfire_bomb.full_recharge_time<=6|cooldown.boomstick.remains<(2*enemies.inrange(10))|nameplates.debuff.sentinels_mark.count>=1
-    - boomstick, if=cooldown.wildfire_bomb.full_recharge_time>9
-    - takedown, if=(!talent.twin_fangs&buff.tip_of_the_spear.up)|(talent.twin_fangs&buff.tip_of_the_spear.stack=1)&target.range<=5&!player.moving
-    - wildfire_bomb, if=cooldown.wildfire_bomb.full_recharge_time<=1.5*gcd
-    - moonlight_chakram, if=!talent.stalk_and_strike|cooldown.wildfire_bomb.full_recharge_time>9&target.range<=5
-    - flamefang_pitch.player, if=(!talent.grenade_juggler|cooldown.wildfire_bomb.charges_fraction<=1.1)&enemies.8y>=1
-    - raptor_strike
+  pl_apl_st:
+    - kill_command,if=buff.tip_of_the_spear.stack=0|(buff.tip_of_the_spear.stack<2&buff.howl_of_the_pack_leader.up)
+    - kill_command,if=cooldown.takedown.remains<gcd&buff.tip_of_the_spear.stack<2&!talent.twin_fangs
+    - takedown,if=buff.tip_of_the_spear.up&target.range<=5&!player.moving
+    - flamefang_pitch
+    - boomstick,if=buff.tip_of_the_spear.up
+    - wildfire_bomb,if=buff.wyverns_cry.up&buff.tip_of_the_spear.up
+    - raptor_strike,if=buff.tip_of_the_spear.up&buff.raptor_swipe.up|!buff.raptor_swipe.up
+    - kill_command
 
+  pl_apl_aoe:
+    - kill_command,if=buff.tip_of_the_spear.stack=0|(buff.tip_of_the_spear.stack<2&buff.howl_of_the_pack_leader.up)
+    - kill_command,if=cooldown.takedown.remains<gcd&buff.tip_of_the_spear.stack<2&!talent.twin_fangs
+    - takedown,if=buff.tip_of_the_spear.up&target.range<=5&!player.moving
+    - boomstick,if=buff.tip_of_the_spear.up
+    - wildfire_bomb,if=buff.tip_of_the_spear.up&cooldown.wildfire_bomb.charges_fractional>1.5
+    - wildfire_bomb,if=buff.wyverns_cry.remains&buff.tip_of_the_spear.up
+    - flamefang_pitch
+    - raptor_strike,if=(buff.tip_of_the_spear.up&buff.raptor_swipe.up)|!buff.raptor_swipe.up
+    - kill_command
+
+  sent_apl_st:
+    - kill_command,if=buff.tip_of_the_spear.stack=0
+    - boomstick,if=buff.tip_of_the_spear.up
+    - wildfire_bomb,if=buff.tip_of_the_spear.up&(debuff.sentinels_mark.up|cooldown.wildfire_bomb.full_recharge_time<4+gcd)
+    - kill_command,if=cooldown.takedown.remains<gcd&buff.tip_of_the_spear.stack<2&!talent.twin_fangs
+    - takedown,if=buff.tip_of_the_spear.up&target.range<=5&!player.moving
+    - boomstick,if=buff.tip_of_the_spear.up
+    - moonlight_chakram,if=buff.tip_of_the_spear.up
+    - flamefang_pitch,if=talent.flamefang_pitch
+    - raptor_strike,if=(buff.tip_of_the_spear.up&buff.raptor_swipe.up)|!buff.raptor_swipe.up
+    - kill_command
+
+  sent_apl_aoe:
+    - kill_command,if=buff.tip_of_the_spear.stack=0
+    - boomstick,if=buff.tip_of_the_spear.up
+    - wildfire_bomb,if=buff.tip_of_the_spear.up&(debuff.sentinels_mark.up|cooldown.wildfire_bomb.full_recharge_time<4+gcd)
+    - kill_command,if=cooldown.takedown.remains<gcd&buff.tip_of_the_spear.stack<2&!talent.twin_fangs
+    - takedown,if=buff.tip_of_the_spear.up
+    - boomstick,if=buff.tip_of_the_spear.up
+    - moonlight_chakram,if=buff.tip_of_the_spear.up
+    - flamefang_pitch,if=talent.flamefang_pitch
+    - raptor_strike,if=(buff.tip_of_the_spear.up&buff.raptor_swipe.up)|!buff.raptor_swipe.up
+    - kill_command
+    
   main:
     - call_action_list,name=spell_queue
-    - call_action_list,name=pet_stuff,if=state.rotation&!player.mounted&player.alive
-    - call_action_list,name=pre_combat,if=target.enemy&target.alive&var.pre_combat_usage&!player.combat&state.rotation
+    - call_action_list,name=pet_stuff,if=state.rotation&!player.mounted
+    - call_action_list,name=pre_combat,if=target.enemy&target.alive&var.pre_combat_usage&!player.combat&state.rotation&!player.mounted
     - call_action_list,name=sanity_checks
     - call_action_list,name=auto_heal
     - call_action_list,name=combat_checks
@@ -154,8 +168,7 @@ lists:
     - call_action_list,name=auto_target
     - call_action_list,name=defensives
     - call_action_list,name=self_heals
-    - call_action_list,name=aoe,if=active_enemies>=2
-    - call_action_list,name=st
-
-
-
+    - call_action_list,name=pl_apl_aoe, if=active_enemies>2&talent.howl_of_the_pack_leader
+    - call_action_list,name=pl_apl_st, if=talent.howl_of_the_pack_leader
+    - call_action_list,name=sent_apl_aoe, if=active_enemies>2
+    - call_action_list,name=sent_apl_st
