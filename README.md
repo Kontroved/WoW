@@ -54,7 +54,7 @@ Features:
 - CC & Interrupts
 - Auto-swap for CC (Interrupt & Intimidation) 
 
-## Protection Paladin
+### Protection Paladin
 
 1.0: Official Release
 
