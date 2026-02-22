@@ -1,4 +1,4 @@
-version: 1.3
+version: 1.4
 author: Kontroved
 spec: 255
 name: Survival Hunter by Kontro
@@ -121,7 +121,7 @@ lists:
     - wildfire_bomb,if=buff.wyverns_cry.up&buff.tip_of_the_spear.up
     - raptor_strike,if=buff.tip_of_the_spear.up&buff.raptor_swipe.up|!buff.raptor_swipe.up
     - kill_command
-
+    - hatchet_toss
   pl_apl_aoe:
     - kill_command,if=buff.tip_of_the_spear.stack=0|(buff.tip_of_the_spear.stack<2&buff.howl_of_the_pack_leader.up)
     - kill_command,if=cooldown.takedown.remains<gcd&buff.tip_of_the_spear.stack<2&!talent.twin_fangs
@@ -132,7 +132,7 @@ lists:
     - flamefang_pitch
     - raptor_strike,if=(buff.tip_of_the_spear.up&buff.raptor_swipe.up)|!buff.raptor_swipe.up
     - kill_command
-
+    - hatchet_toss
   sent_apl_st:
     - kill_command,if=buff.tip_of_the_spear.stack=0
     - boomstick,if=buff.tip_of_the_spear.up
@@ -144,7 +144,7 @@ lists:
     - flamefang_pitch,if=talent.flamefang_pitch
     - raptor_strike,if=(buff.tip_of_the_spear.up&buff.raptor_swipe.up)|!buff.raptor_swipe.up
     - kill_command
-
+    - hatchet_toss
   sent_apl_aoe:
     - kill_command,if=buff.tip_of_the_spear.stack=0
     - boomstick,if=buff.tip_of_the_spear.up
@@ -156,7 +156,7 @@ lists:
     - flamefang_pitch,if=talent.flamefang_pitch
     - raptor_strike,if=(buff.tip_of_the_spear.up&buff.raptor_swipe.up)|!buff.raptor_swipe.up
     - kill_command
-    
+    - hatchet_toss
   main:
     - call_action_list,name=spell_queue
     - call_action_list,name=pet_stuff,if=state.rotation&!player.mounted
