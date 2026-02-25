@@ -22,6 +22,7 @@ Features:
 
 ### Augmentation Evoker
 1.0 Official Release
+2.0 Rework
 
 Features:
 - Automatic Bombardment Spread!!!
