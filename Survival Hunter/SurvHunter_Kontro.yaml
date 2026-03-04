@@ -1,4 +1,4 @@
-version: 1.4
+version: 1.5
 author: Kontroved
 spec: 255
 name: Survival Hunter by Kontro
@@ -59,6 +59,7 @@ config:
     default: 10
 
 variables:
+    version: 1.4
     #features
     auto_swap: config.features.has(2)
     pre_combat_usage: config.features.has(0)
@@ -116,12 +117,13 @@ lists:
     - kill_command,if=buff.tip_of_the_spear.stack=0|(buff.tip_of_the_spear.stack<2&buff.howl_of_the_pack_leader.up)
     - kill_command,if=cooldown.takedown.remains<gcd&buff.tip_of_the_spear.stack<2&!talent.twin_fangs
     - takedown,if=buff.tip_of_the_spear.up&target.range<=5&!player.moving
-    - flamefang_pitch.player
+    - flamefang_pitch
     - boomstick,if=buff.tip_of_the_spear.up
     - wildfire_bomb,if=buff.wyverns_cry.up&buff.tip_of_the_spear.up
+    - raptor_swipe,if=buff.tip_of_the_spear.up
     - raptor_strike,if=buff.tip_of_the_spear.up&buff.raptor_swipe.up|!buff.raptor_swipe.up
     - kill_command
-    - hatchet_toss
+    - hatchet_toss,if=focus.max
   pl_apl_aoe:
     - kill_command,if=buff.tip_of_the_spear.stack=0|(buff.tip_of_the_spear.stack<2&buff.howl_of_the_pack_leader.up)
     - kill_command,if=cooldown.takedown.remains<gcd&buff.tip_of_the_spear.stack<2&!talent.twin_fangs
@@ -129,10 +131,11 @@ lists:
     - boomstick,if=buff.tip_of_the_spear.up
     - wildfire_bomb,if=buff.tip_of_the_spear.up&cooldown.wildfire_bomb.charges_fractional>1.5
     - wildfire_bomb,if=buff.wyverns_cry.remains&buff.tip_of_the_spear.up
-    - flamefang_pitch.player
+    - flamefang_pitch
+    - raptor_swipe,if=buff.tip_of_the_spear.up
     - raptor_strike,if=(buff.tip_of_the_spear.up&buff.raptor_swipe.up)|!buff.raptor_swipe.up
     - kill_command
-    - hatchet_toss
+    - hatchet_toss,if=focus.max
   sent_apl_st:
     - kill_command,if=buff.tip_of_the_spear.stack=0
     - boomstick,if=buff.tip_of_the_spear.up
@@ -141,10 +144,11 @@ lists:
     - takedown,if=buff.tip_of_the_spear.up&target.range<=5&!player.moving
     - boomstick,if=buff.tip_of_the_spear.up
     - moonlight_chakram,if=buff.tip_of_the_spear.up
-    - flamefang_pitch.player,if=talent.flamefang_pitch
+    - flamefang_pitch,if=talent.flamefang_pitch
+    - raptor_swipe,if=buff.tip_of_the_spear.up
     - raptor_strike,if=(buff.tip_of_the_spear.up&buff.raptor_swipe.up)|!buff.raptor_swipe.up
     - kill_command
-    - hatchet_toss
+    - hatchet_toss,if=focus.max
   sent_apl_aoe:
     - kill_command,if=buff.tip_of_the_spear.stack=0
     - boomstick,if=buff.tip_of_the_spear.up
@@ -153,10 +157,11 @@ lists:
     - takedown,if=buff.tip_of_the_spear.up
     - boomstick,if=buff.tip_of_the_spear.up
     - moonlight_chakram,if=buff.tip_of_the_spear.up
-    - flamefang_pitch.player,if=talent.flamefang_pitch
+    - flamefang_pitch,if=talent.flamefang_pitch
+    - raptor_swipe,if=buff.tip_of_the_spear.up
     - raptor_strike,if=(buff.tip_of_the_spear.up&buff.raptor_swipe.up)|!buff.raptor_swipe.up
     - kill_command
-    - hatchet_toss
+    - hatchet_toss,if=focus.max
   main:
     - call_action_list,name=spell_queue
     - call_action_list,name=pet_stuff,if=state.rotation&!player.mounted
@@ -172,4 +177,3 @@ lists:
     - call_action_list,name=pl_apl_st, if=talent.howl_of_the_pack_leader
     - call_action_list,name=sent_apl_aoe, if=active_enemies>2
     - call_action_list,name=sent_apl_st
-
