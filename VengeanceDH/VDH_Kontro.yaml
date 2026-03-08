@@ -1,4 +1,4 @@
-version: 1.2
+version: 1.3
 author: Kontroved
 spec: 581
 name: Vengeance
@@ -60,11 +60,10 @@ config:
     default: 30
 
   ttd_cd_usage:
-    label: "TTD CD Usage Threshold"
-    type: slider
+    label: "TTD META&FB"
     min: 0
     max: 30
-    default: 10
+    default: 15
 
 variables:
   ## Features
@@ -86,6 +85,9 @@ variables:
   fiery_demise_active: talent.fiery.brand&talent.fiery_demise&debuff.fiery_brand.up
   ur_fishing: talent.untethered_rage&buff.metamorphosis.up&buff.metamorphosis.remains<8&!buff.untethered_rage.up
   fallout_aoe: talent.fallout&active_enemies>=3
+  #ttd
+  ttd: fight_remains<9999&fight_remains>config.ttd_cd_usage
+
 
 lists:
   combat_checks:
@@ -101,19 +103,19 @@ lists:
     - darkness,if=health.pct<=config.darkness_hp_pct&!buff.metamorphosis.up&!debuff.fiery_brand.up
 
   interrupts:
+    - chaos_nova,if=(interrupts.8y.stun.count>=2|interrupts.8y.count>=2)
+    - sigil_of_silence.player,if=interrupts.8y.count>=2&(cooldown.chaos_nova.remains>gcd+1|fury<=30)
+    - sigil_of_misery.player,if=(interrupts.8y.stun.count>=2|interrupts.8y.count>=2)&(cooldown.chaos_nova.remains>gcd+1|fury<=30)
     #- target_enemy,name="auto_target Stun",if=interrupts.10y.stun.ready&!interrupts.target.stun.ready&cooldown.paralysis.ready&enemies.inrange(10)>=1&var.auto_swap
     - disrupt,if=config.interrupt_target&(config.interrupt_all&target.casting.interruptible|interrupts.target.ready)&target.casting.elapsed>=0.2&(target.casting.remains<1|target.channeling)
     - disrupt.mouseover,if=config.interrupt_mouseover&(config.interrupt_all&mouseover.casting.interruptible|interrupts.mouseover.ready)&interrupts.mouseover.ready&mouseover.casting.elapsed>=0.2&(mouseover.casting.remains<1|mouseover.channeling)
     - disrupt.focus,if=config.interrupt_focus&(config.interrupt_all&focus.casting.interruptible|interrupts.focus.ready)&interrupts.focus.ready&focus.casting.elapsed>=0.2&(focus.casting.remains<1|focus.channeling)
       # CC Interrupt
     - imprison,if=interrupts.target.stun.ready&target.casting.elapsed>=0.5
-    - imprison.mouseover,if=interrupts.mouseover.stun.ready&mouseover.casting.elapsed>=0.5
+    - imprison.mouseover,if=interrupts.mouseover.stun.ready&mouseover.casting.elapsed>=0.1
       # AoE Interrupt
-    - chaos_nova,if=interrupts.8y.stun.count>=2|interrupts.8y.count>=2
-    - sigil_of_silence.player,if=interrupts.8y.count>=2&cooldown.chaos_nova.remains>gcd+1
-    - sigil_of_misery.player,if=(interrupts.8y.stun.count>=2|interrupts.8y.count>=2)&cooldown.chaos_nova.remains>gcd+1
     - target_enemy,delay=300,name="range tab, if target ! casting",if=!interrupts.target.ready&target.range>8&!var.interrupt_swap_going&enemies.8y>=1
-    - target_enemy,delay=100,name="auto_target Interrupt",if=(interrupts.8y.ready|interrupts.8y.count>=1)&!interrupts.target.ready&enemies.inrange(10)>=1&var.auto_swap
+    - target_enemy,delay=100,name="auto_target Interrupt",if=(interrupts.8y.ready|interrupts.8y.count>=1)&!interrupts.target.ready&enemies.inrange(8)>=1&var.auto_swap
 
   taunt:
     - torment,name="Taunt",if=target.threat<2&target.combat&target.threat!=-1
@@ -134,7 +136,7 @@ lists:
     - throw_glaive,name="filler"
 
   ar:
-    - metamorphosis,if=config.features2.has(1)&(!buff.metamorphosis.up&var.soul_fragments>=3)|buff.untethered_rage.up
+    - metamorphosis,if=var.ttd&config.features2.has(1)&(!buff.metamorphosis.up&var.soul_fragments>=3)|buff.untethered_rage.up
     - call_action_list,name=ar_empowered
     - call_action_list,name=ar_brand_window,if=var.fiery_demise_active
     - call_action_list,name=ur_fishing,if=var.ur_fishing
@@ -145,7 +147,7 @@ lists:
     - spirit_bomb,if=var.soul_fragments>=3&var.fiery_demise_active
     - spirit_bomb,if=(buff.metamorphosis.up&var.soul_fragments>=4)|(!buff.metamorphosis.up&var.soul_fragments>=5)
     - fracture
-    - felblade,if=(target.range<5|!config.features2.has(5))
+    - felblade,if=(target.range<=5|!config.features2.has(5))
     - immolation_aura,if=talent.fallout
     - sigil_of_flame.player,if=(!player.moving|!config.features2.has(4))&enemies.8y>=1
     - soul_cleave
@@ -159,7 +161,7 @@ lists:
     - soul_cleave,if=buff.glaive_flurry.up&!buff.rending_strike.up
 
   ar_cooldowns:
-    - fiery_brand,if=talent.fiery_demise&(cooldown.fiery_brand.charges>=2|(!dot.fiery_brand.ticking&(cooldown.soul_carver.remains<6|cooldown.fel_devastation.remains<6|cooldown.sigil_of_spite.remains<6)))
+    - fiery_brand,if=var.ttd&talent.fiery_demise&(cooldown.fiery_brand.charges>=2|(!dot.fiery_brand.ticking&(cooldown.soul_carver.remains<6|cooldown.fel_devastation.remains<6|cooldown.sigil_of_spite.remains<6)))
     - sigil_of_spite.player,if=var.soul_fragments<=3&!player.moving&enemies.8y>=1
     - soul_carver,if=!talent.fiery_demise|var.fiery_demise_active
     - fel_devastation,if=!buff.rending_strike.up&!buff.glaive_flurry.up&(!player.moving|!config.features2.has(3))
@@ -170,7 +172,7 @@ lists:
     - fracture,if=buff.metamorphosis.up
     - sigil_of_flame.player,if=(!player.moving|!config.features2.has(4))&enemies.8y>=1
     - fracture
-    - felblade, if=(target.range<5|!config.features2.has(5))
+    - felblade, if=(target.range<=5|!config.features2.has(5))
     - soul_cleave
     - call_action_list,name=fillers
     
@@ -186,7 +188,7 @@ lists:
     - call_action_list,name=anni_voidfall
     - metamorphosis,name="1 - Metamorphosis",if=config.features2.has(1)&(!buff.metamorphosis.up|buff.untethered_rage.up)&!buff.voidfall_spending.up&buff.voidfall_building.stack<2
     - call_action_list,name=ur_fishing,if=var.ur_fishing
-    - fiery_brand,name="2 - Fiery Brand",if=talent.fiery_demise&!dot.fiery_brand.ticking&var.fiery_brand_spam&!buff.metamorphosis.up
+    - fiery_brand,name="2 - Fiery Brand",if=var.ttd&talent.fiery_demise&!dot.fiery_brand.ticking&var.fiery_brand_spam&!buff.metamorphosis.up
     - immolation_aura,name="3 - Immolation Aura (Charred Flesh)",if=talent.charred_flesh&dot.fiery_brand.ticking
     - sigil_of_spite.player,name="4 - Sigil of Spite",if=var.soul_fragments<=2&!player.moving&enemies.8y>=1
     - soul_carver,name="5 - Soul Carver",if=talent.soul_carver&var.soul_fragments<=3
@@ -194,7 +196,7 @@ lists:
     - fracture,name="7 - Fracture (Recharge)",if=cooldown.fracture.full_recharge_time<gcd.max&((buff.metamorphosis.up&var.soul_fragments<4)|(!buff.metamorphosis.up&var.soul_fragments<5))
     - spirit_bomb,name="8 - Spirit Bomb",if=(buff.metamorphosis.up&var.soul_fragments>=4)|(!buff.metamorphosis.up&var.soul_fragments>=5)
     - fracture,name="9 - Fracture (No Voidfall)",if=!buff.voidfall_spending.up
-    - felblade,name="10 - Felblade",if=(target.range<5|!config.features2.has(5))
+    - felblade,name="10 - Felblade",if=(target.range<=5|!config.features2.has(5))
     - immolation_aura,name="11 - Immolation Aura (Fallout)",if=talent.fallout
     - sigil_of_flame.player,name="12 - Sigil of Flame",if=(!player.moving|!config.features2.has(4))&enemies.8y>=1
     - soul_cleave,name="13 - Soul Cleave"
@@ -202,7 +204,7 @@ lists:
     - call_action_list,name=fillers
 
   anni_voidfall: 
-    - fiery_brand,name="Void: 1 - Fiery Brand",if=talent.fiery_demise&!debuff.fiery_brand.up&(buff.voidfall.stack=2|buff.voidfall.stack=3)&!buff.metamorphosis.up
+    - fiery_brand,name="Void: 1 - Fiery Brand",if=var.ttd&talent.fiery_demise&!debuff.fiery_brand.up&(buff.voidfall.stack=2|buff.voidfall.stack=3)&!buff.metamorphosis.up
     - fel_devastation,name="Void: 2 - Fel Devastation",if=buff.voidfall.stack=3&var.soul_fragments<((buff.metamorphosis.up&4)|(!buff.metamorphosis.up&5))
     - spirit_bomb,name="Void: 3 - Spirit Bomb",if=buff.voidfall.stack=3&((buff.metamorphosis.up&var.soul_fragments>=4)|(!buff.metamorphosis.up&var.soul_fragments>=5))
     - soul_cleave,name="Void: 4 - Soul Cleave",if=buff.voidfall.up&buff.voidfall.stack<3
@@ -217,6 +219,6 @@ lists:
     - call_action_list,name=taunt
     - call_action_list,name=interrupts
     - call_action_list,name=auto_target
-    - infernal_strike.player,if=var.infernal_strike_player&target.range<=5&cooldown.infernal_strike.charges=2&!player.player.moving
+    - infernal_strike.player,delay=100,if=var.infernal_strike_player&target.range<=5&cooldown.infernal_strike.charges=2&!player.player.moving
     - call_action_list,name=ar,if=talent.art_of_the_glaive
     - call_action_list,name=anni
