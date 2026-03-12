@@ -30,6 +30,8 @@ config:
         value: 3
       - label: "Tigers Lust on roots"
         value: 4
+      - label: "Fort. Brew DPS"
+        value: 5
     default: [0,1,2,3,4]
     show_override: true
   # Defensive Settings
@@ -171,10 +173,12 @@ lists:
     - tiger_palm,name="Tiger Palm (AoE Filler)",if=cooldown.keg_smash.remains>gcd&(energy>=80|energy.time_to_80<=cooldown.keg_smash.remains)
     - crackling_jade_lightning, if=target.range>=10
   APL:
+    - touch_of_death
+    - keg_smash,if=cooldown.keg_smash.charges=2
     - black_ox_brew,if=talent.aspect_of_harmony.enabled&cooldown.celestial_brew.charges_fractional<1|cooldown.celestial_infusion.charges_fractional<1
     - black_ox_brew,if=!talent.aspect_of_harmony.enabled&energy<40
-    - celestial_brew,if=cooldown.celestial_brew.charges_fractional>1.8&!buff.empty_barrel.up&!buff.celestial_brew.up
-    - celestial_infusion,if=cooldown.celestial_infusion.charges_fractional>1.8&!buff.empty_barrel.up&!buff.celestial_infusion.up
+    - celestial_brew,if=cooldown.celestial_brew.charges_fractional>1.8&!buff.empty_barrel.up&!buff.celestial_brew.up&cooldown.keg_smash.charges<2
+    - celestial_infusion,if=cooldown.celestial_infusion.charges_fractional>1.8&!buff.empty_barrel.up&!buff.celestial_infusion.up&cooldown.keg_smash.charges<2
     - keg_smash,if=var.aspect_of_harmony_spender&buff.empty_barrel.up
     - breath_of_fire,if=talent.wisdom_of_the_wall.enabled&buff.invoke_niuzao_the_black_ox.up
     - keg_smash,if=talent.wisdom_of_the_wall.enabled&buff.invoke_niuzao_the_black_ox.up
@@ -184,7 +188,7 @@ lists:
     - celestial_infusion,if=!(var.apex_rank=4&buff.empty_barrel.up)&buff.aspect_of_harmony.icon=5041790
     - celestial_infusion,if=!(var.apex_rank=4&buff.empty_barrel.up)&target.time_to_die<15&(buff.aspect_of_harmony.icon=5041800||buff.aspect_of_harmony.icon=5041790)
     - purifying_brew,if=!(var.apex_rank>=1&buff.empty_barrel.up)&stagger.pct>1
-    - fortifying_brew,if=!(var.apex_rank=4&buff.empty_barrel.up)&!buff.celestial_infusion.up
+    - fortifying_brew,if=!(var.apex_rank=4&buff.empty_barrel.up)&!buff.celestial_infusion.up&config.features.has(5)
     - chi_burst
     - exploding_keg.player,if=cooldown.keg_smash.charges_fractional<1
     - empty_the_cellar,if=talent.aspect_of_harmony.enabled&(cooldown.celestial_brew.remains>15|cooldown.celestial_infusion.remains>15)
