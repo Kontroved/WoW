@@ -7,15 +7,15 @@ description: Brewmaster Monk Rotation by Kontroved
 entry: main
 
 config:
-  Rotation:
-    label: "Rotation Type"
+  mode:
+    label: "Rotation Mode"
     type: dropdown
     options:
-      - label: "OLD"
+      - label: "DPS"
         value: 0
-      - label: "NEW"
+      - label: "High-Key, Survivability Focused"
         value: 1
-    default: 0
+    default: 1
   features:
     label: "Features"
     type: multi_select
@@ -121,94 +121,46 @@ lists:
     #- keg_smash,name="Keg Taunt",if=target.threat<2&target.combat&target.threat!=-1&cooldown.provoke.remains>1
     #- keg_smash.mouseover,name="Keg Taunt MO",if=mouseover.threat<2&mouseover.combat&mouseover.threat!=-1&cooldown.provoke.remains>1
 
-  opener:
-    - touch_of_death,name="Touch of Death (Opener)"
-    - chi_burst,name="Chi Burst (Opener)"
-    - keg_smash,name="Keg Smash (Opener)"
-    - blackout_kick,name="Blackout Kick (Opener)",if=!buff.blackout_combo.up
-    - breath_of_fire,name="BoF (Opener)",if=buff.charred_passions.remains<=2
-    - tiger_palm,name="Tiger Palm (Opener)",if=buff.blackout_combo.up
-    - exploding_keg,name="Exploding Keg (Opener)",if=player.moving
-    - keg_smash,name="Keg Smash (Opener Final)"
-
-  niuzao_window:
-    - blackout_kick,name="Blackout Kick (Niuzao)",if=buff.invoke_niuzao_the_black_ox.up&!buff.blackout_combo.up
-    - breath_of_fire,name="BoF (Niuzao)",if=buff.invoke_niuzao_the_black_ox.up&talent.flurry_strikes&(!buff.charred_passions.up|buff.charred_passions.remains<=2)
-    - mighty_stomp,name="Mighty Stomp (Niuzao)",if=buff.invoke_niuzao_the_black_ox.up&talent.mighty_stomp
-
-  st:
-    - empty_the_cellar,ignore_usable=true,ignore_cooldown=true,if=buff.empty_the_cellar.up
-    - call_action_list,name=niuzao_window
-    - black_ox_brew,name="Black Ox Brew (ST)",if=energy.deficit>=40&cooldown.purifying_brew.charges_fractional<1&cooldown.celestial_brew.remains>10
-    - touch_of_death,name="Touch of Death (ST)"
-    - keg_smash,name="Keg Smash (ST shado_panw)",if=talent.flurry_strikes&cooldown.keg_smash.charges_fractional>=1.4
-    - blackout_kick,name="Blackout Kick (ST)",if=!buff.blackout_combo.up
-    - invoke_niuzao_the_black_ox,name="Invoke Niuzao (ST)",if=fight_remains>=25&fight_remains!=9999
-    - breath_of_fire,name="BoF (ST)",if=!buff.charred_passions.up|buff.charred_passions.remains<=2
-    - tiger_palm,name="Tiger Palm (ST Combo)",if=buff.blackout_combo.up
-    - rushing_jade_wind,name="RJW (ST Before Keg)",if=cooldown.exploding_keg.remains<=gcd
-    - exploding_keg.player,name="Exploding Keg (ST)",if=(buff.rushing_jade_wind.up|!talent.rushing_jade_wind)&active_enemies>=1&cooldown.keg_smash.charges<1
-    - chi_burst,name="Chi Burst (ST shado_panw)",if=talent.flurry_strikes
-    - keg_smash,name="Keg Smash (ST Main)"
-    - rushing_jade_wind,name="RJW (ST Main)",if=!buff.rushing_jade_wind.up
-    - tiger_palm,name="Tiger Palm (ST Filler)",if=cooldown.keg_smash.remains2|energy>=80
-    - crackling_jade_lightning, if=target.range>=10
-  aoe:
-    - empty_the_cellar,ignore_usable=true,ignore_cooldown=true,if=buff.empty_the_cellar.up
-    - call_action_list,name=niuzao_window
-    - black_ox_brew,name="Black Ox Brew (AoE)",if=energy.deficit>=40&cooldown.purifying_brew.charges_fractional<1&cooldown.celestial_brew.remains>10
-    - touch_of_death,name="Touch of Death (AoE)"
-    - keg_smash,name="Keg Smash (AoE shado_panw)",if=talent.flurry_strikes&cooldown.keg_smash.charges_fractional>=1.4
-    - blackout_kick,name="Blackout Kick (AoE)",if=!buff.blackout_combo.up
-    - invoke_niuzao_the_black_ox,name="Invoke Niuzao (AoE)",if=fight_remains>=25&fight_remains!=9999
-    - breath_of_fire,name="BoF (AoE)",if=!buff.charred_passions.up|buff.charred_passions.remains<=3
-    - tiger_palm,name="Tiger Palm (AoE Combo)",if=buff.blackout_combo.up
-#    - keg_smash,name="Keg Smash (AoE shado_panw)",if=talent.flurry_strikes&cooldown.keg_smash.charges_fractional>=1.8
-    - chi_burst,name="Chi Burst (AoE shado_panw)",if=talent.flurry_strikes
-    - rushing_jade_wind,name="RJW (AoE Before Keg)",if=cooldown.exploding_keg.remains<=gcd
-    - exploding_keg.player,name="Exploding Keg (AoE)",if=(buff.rushing_jade_wind.up|!talent.rushing_jade_wind)&active_enemies>=1&cooldown.keg_smash.charges<1
-    - keg_smash,name="Keg Smash (AoE Main)"
-    - rushing_jade_wind,name="RJW (AoE Main)",if=!buff.rushing_jade_wind.up
-    - spinning_crane_kick,name="Spinning Crane Kick (AoE)",if=cooldown.keg_smash.remains>gcd&(energy>=60|energy.time_to_60<=cooldown.keg_smash.remains)
-    - tiger_palm,name="Tiger Palm (AoE Filler)",if=cooldown.keg_smash.remains>gcd&(energy>=80|energy.time_to_80<=cooldown.keg_smash.remains)
-    - crackling_jade_lightning, if=target.range>=10
   APL:
-    - touch_of_death
-    - keg_smash,if=cooldown.keg_smash.charges=2
-    - black_ox_brew,if=talent.aspect_of_harmony&cooldown.celestial_brew.charges_fractional<1|cooldown.celestial_infusion.charges_fractional<1
-    - black_ox_brew,if=!talent.aspect_of_harmony&energy<40
-    - celestial_brew,if=cooldown.celestial_brew.charges_fractional>1.8&!buff.empty_barrel.up&!buff.celestial_brew.up&cooldown.keg_smash.charges<2
-    - celestial_infusion,if=cooldown.celestial_infusion.charges_fractional>1.8&!buff.empty_barrel.up&!buff.celestial_infusion.up&cooldown.keg_smash.charges<2
-    - keg_smash,if=var.aspect_of_harmony_spender&buff.empty_barrel.up
-    - breath_of_fire,if=talent.wisdom_of_the_wall&buff.invoke_niuzao_the_black_ox.up
-    - keg_smash,if=talent.wisdom_of_the_wall&buff.invoke_niuzao_the_black_ox.up
-    - blackout_kick,if=talent.blackout_combo&!buff.blackout_combo.up
-    - celestial_brew,if=!(var.apex_rank=4&buff.empty_barrel.up)&buff.aspect_of_harmony.icon=5041790
-    - celestial_brew,if=!(var.apex_rank=4&buff.empty_barrel.up)&target.time_to_die<15&(buff.aspect_of_harmony.icon=5041800||buff.aspect_of_harmony.icon=5041790)
-    - celestial_infusion,if=!(var.apex_rank=4&buff.empty_barrel.up)&buff.aspect_of_harmony.icon=5041790
-    - celestial_infusion,if=!(var.apex_rank=4&buff.empty_barrel.up)&target.time_to_die<15&(buff.aspect_of_harmony.icon=5041800||buff.aspect_of_harmony.icon=5041790)
-    - purifying_brew,if=!(var.apex_rank>=1&buff.empty_barrel.up)&stagger.pct>1
-    - fortifying_brew,if=!(var.apex_rank=4&buff.empty_barrel.up)&!buff.celestial_infusion.up&config.features.has(5)
-    - chi_burst
-    - exploding_keg.player,if=cooldown.keg_smash.charges_fractional<1
-    - empty_the_cellar,if=talent.aspect_of_harmony&(cooldown.celestial_brew.remains>15|cooldown.celestial_infusion.remains>15)
-    - empty_the_cellar,if=!talent.aspect_of_harmony&buff.empty_the_cellar.remains<1.5
-    - invoke_niuzao_the_black_ox
-    - breath_of_fire,if=cooldown.blackout_kick.remains>1.5&!buff.empty_barrel.up&cooldown.keg_smash.charges<1+talent.stormstouts_last_keg
-    - tiger_palm,if=buff.blackout_combo.up
-    - celestial_brew,if=talent.flurry_strikes&!(var.apex_rank=4&buff.empty_barrel.up)
-    - keg_smash,if=talent.flurry_strikes
-    - keg_smash,if=talent.scalding_brew
-    - keg_smash,if=buff.empty_barrel.up
-    - keg_smash,if=cooldown.keg_smash.charges=1+talent.stormstouts_last_keg
-    - breath_of_fire
-    - empty_the_cellar
-    - rushing_jade_wind
-    - keg_smash
-    - blackout_kick
-    - tiger_palm,if=talent.aspect_of_harmony&energy>50
-    - tiger_palm,if=energy>65
-    - expel_harm
+    - touch_of_death,name="Touch of Death (Prio 1)"
+    - keg_smash,name="Keg Smash (Prio 2)",if=cooldown.keg_smash.charges=2
+    - black_ox_brew,name="Black Ox Brew (Prio 3)",if=talent.aspect_of_harmony&cooldown.celestial_brew.charges_fractional<1|cooldown.celestial_infusion.charges_fractional<1
+    - black_ox_brew,name="Black Ox Brew (Prio 4)",if=!talent.aspect_of_harmony&energy<40
+    - celestial_brew,name="Celestial Brew (Prio 5)",if=cooldown.celestial_brew.charges_fractional>1.8&!buff.empty_barrel.up&!buff.celestial_brew.up&cooldown.keg_smash.charges<2&!buff.fortifying_brew.up&config.mode=1
+    - celestial_infusion,name="Celestial Infusion (Prio 6)",if=cooldown.celestial_infusion.charges_fractional>1.8&!buff.empty_barrel.up&!buff.celestial_infusion.up&cooldown.keg_smash.charges<2&!buff.fortifying_brew.up&config.mode=1
+    - celestial_brew,name="Celestial Brew (Prio 7)",if=buff.450711.up&!buff.empty_barrel.up
+    - celestial_infusion,name="Celestial Infusion (Prio 8)",if=buff.450711.up&!buff.empty_barrel.up
+    - keg_smash,name="Keg Smash (Prio 9)",if=buff.450711.up&buff.empty_barrel.up
+    - breath_of_fire,name="Breath of Fire (Prio 10)",if=talent.wisdom_of_the_wall&buff.invoke_niuzao_the_black_ox.up
+    - keg_smash,name="Keg Smash (Prio 11)",if=talent.wisdom_of_the_wall&buff.invoke_niuzao_the_black_ox.up
+    - blackout_kick,name="Blackout Kick (Prio 12)",if=talent.blackout_combo&!buff.blackout_combo.up
+    - celestial_brew,name="Celestial Brew (Prio 13)",if=!(var.apex_rank=4&buff.empty_barrel.up)&buff.aspect_of_harmony.icon=5041790
+    - celestial_brew,name="Celestial Brew (Prio 14)",if=!(var.apex_rank=4&buff.empty_barrel.up)&target.time_to_die<15&(buff.aspect_of_harmony.icon=5041800||buff.aspect_of_harmony.icon=5041790)
+    - celestial_infusion,name="Celestial Infusion (Prio 15)",if=!(var.apex_rank=4&buff.empty_barrel.up)&buff.aspect_of_harmony.icon=5041790
+    - celestial_infusion,name="Celestial Infusion (Prio 16)",if=!(var.apex_rank=4&buff.empty_barrel.up)&target.time_to_die<15&(buff.aspect_of_harmony.icon=5041800||buff.aspect_of_harmony.icon=5041790)
+    - purifying_brew,name="Purifying Brew (Prio 17)",if=!(var.apex_rank>=1&buff.empty_barrel.up)&stagger.pct>1&cooldown.purifying_brew.charges_fractional>=1
+    - fortifying_brew,name="Fortifying Brew (Prio 18)",if=!(var.apex_rank=4&buff.empty_barrel.up)&!buff.celestial_infusion.up&config.features.has(5)
+    - chi_burst,name="Chi Burst (Prio 19)"
+    - exploding_keg.player,name="Exploding Keg (Prio 20)",if=cooldown.keg_smash.charges_fractional<1
+    - empty_the_cellar,name="Empty the Cellar (Prio 21)",if=talent.aspect_of_harmony&(cooldown.celestial_brew.remains>15|cooldown.celestial_infusion.remains>15)
+    - empty_the_cellar,name="Empty the Cellar (Prio 22)",if=!talent.aspect_of_harmony&buff.empty_the_cellar.remains<1.5
+    - invoke_niuzao_the_black_ox,name="Invoke Niuzao the Black Ox (Prio 23)"
+    - breath_of_fire,name="Breath of Fire (Prio 24)",if=cooldown.blackout_kick.remains>1.5&!buff.empty_barrel.up&cooldown.keg_smash.charges<1+talent.stormstouts_last_keg
+    - tiger_palm,name="Tiger Palm (Prio 25)",if=buff.blackout_combo.up
+    - celestial_brew,name="Celestial Brew (Prio 26)",if=talent.flurry_strikes&!(var.apex_rank=4&buff.empty_barrel.up)
+    - celestial_infusion,name="Celestial Infusion (Prio 27)",if=talent.flurry_strikes&!(var.apex_rank=4&buff.empty_barrel.up)
+    - keg_smash,name="Keg Smash (Prio 28)",if=talent.flurry_strikes
+    - keg_smash,name="Keg Smash (Prio 29)",if=talent.scalding_brew
+    - keg_smash,name="Keg Smash (Prio 30)",if=buff.empty_barrel.up
+    - keg_smash,name="Keg Smash (Prio 31)",if=cooldown.keg_smash.charges=1+talent.stormstouts_last_keg
+    - breath_of_fire,name="Breath of Fire (Prio 32)"
+    - empty_the_cellar,name="Empty the Cellar (Prio 33)"
+    - rushing_jade_wind,name="Rushing Jade Wind (Prio 34)"
+    - keg_smash,name="Keg Smash (Prio 35)"
+    - blackout_kick,name="Blackout Kick (Prio 36)"
+    - tiger_palm,name="Tiger Palm (Prio 37)",if=talent.aspect_of_harmony&energy>50
+    - tiger_palm,name="Tiger Palm (Prio 38)",if=energy>65
+    - expel_harm,name="Expel Harm (Prio 39)",if=energy>55
 
 
   main:
@@ -223,7 +175,4 @@ lists:
     - call_action_list,name=taunt, if=var.taunt_usage
     - call_action_list,name=defensives
     - call_action_list,name=self_heals
-    - call_action_list,name=opener,if=combat.time<gcd*8&var.opener_usage&config.Rotation=0
-    - call_action_list,name=APL,if=config.Rotation=1
-    - call_action_list,name=aoe,if=active_enemies>=2&config.Rotation=0
-    - call_action_list,name=st,if=config.Rotation=0
+    - call_action_list,name=APL
