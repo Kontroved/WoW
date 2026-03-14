@@ -175,14 +175,14 @@ lists:
   APL:
     - touch_of_death
     - keg_smash,if=cooldown.keg_smash.charges=2
-    - black_ox_brew,if=talent.aspect_of_harmony.enabled&cooldown.celestial_brew.charges_fractional<1|cooldown.celestial_infusion.charges_fractional<1
-    - black_ox_brew,if=!talent.aspect_of_harmony.enabled&energy<40
+    - black_ox_brew,if=talent.aspect_of_harmony&cooldown.celestial_brew.charges_fractional<1|cooldown.celestial_infusion.charges_fractional<1
+    - black_ox_brew,if=!talent.aspect_of_harmony&energy<40
     - celestial_brew,if=cooldown.celestial_brew.charges_fractional>1.8&!buff.empty_barrel.up&!buff.celestial_brew.up&cooldown.keg_smash.charges<2
     - celestial_infusion,if=cooldown.celestial_infusion.charges_fractional>1.8&!buff.empty_barrel.up&!buff.celestial_infusion.up&cooldown.keg_smash.charges<2
     - keg_smash,if=var.aspect_of_harmony_spender&buff.empty_barrel.up
-    - breath_of_fire,if=talent.wisdom_of_the_wall.enabled&buff.invoke_niuzao_the_black_ox.up
-    - keg_smash,if=talent.wisdom_of_the_wall.enabled&buff.invoke_niuzao_the_black_ox.up
-    - blackout_kick,if=talent.blackout_combo.enabled&!buff.blackout_combo.up
+    - breath_of_fire,if=talent.wisdom_of_the_wall&buff.invoke_niuzao_the_black_ox.up
+    - keg_smash,if=talent.wisdom_of_the_wall&buff.invoke_niuzao_the_black_ox.up
+    - blackout_kick,if=talent.blackout_combo&!buff.blackout_combo.up
     - celestial_brew,if=!(var.apex_rank=4&buff.empty_barrel.up)&buff.aspect_of_harmony.icon=5041790
     - celestial_brew,if=!(var.apex_rank=4&buff.empty_barrel.up)&target.time_to_die<15&(buff.aspect_of_harmony.icon=5041800||buff.aspect_of_harmony.icon=5041790)
     - celestial_infusion,if=!(var.apex_rank=4&buff.empty_barrel.up)&buff.aspect_of_harmony.icon=5041790
@@ -191,22 +191,22 @@ lists:
     - fortifying_brew,if=!(var.apex_rank=4&buff.empty_barrel.up)&!buff.celestial_infusion.up&config.features.has(5)
     - chi_burst
     - exploding_keg.player,if=cooldown.keg_smash.charges_fractional<1
-    - empty_the_cellar,if=talent.aspect_of_harmony.enabled&(cooldown.celestial_brew.remains>15|cooldown.celestial_infusion.remains>15)
-    - empty_the_cellar,if=!talent.aspect_of_harmony.enabled&buff.empty_the_cellar.remains<1.5
+    - empty_the_cellar,if=talent.aspect_of_harmony&(cooldown.celestial_brew.remains>15|cooldown.celestial_infusion.remains>15)
+    - empty_the_cellar,if=!talent.aspect_of_harmony&buff.empty_the_cellar.remains<1.5
     - invoke_niuzao_the_black_ox
-    - breath_of_fire,if=cooldown.blackout_kick.remains>1.5&!buff.empty_barrel.up&cooldown.keg_smash.charges<1+talent.stormstouts_last_keg.enabled
+    - breath_of_fire,if=cooldown.blackout_kick.remains>1.5&!buff.empty_barrel.up&cooldown.keg_smash.charges<1+talent.stormstouts_last_keg
     - tiger_palm,if=buff.blackout_combo.up
-    - celestial_brew,if=talent.flurry_strikes.enabled&!(var.apex_rank=4&buff.empty_barrel.up)
-    - keg_smash,if=talent.flurry_strikes.enabled
-    - keg_smash,if=talent.scalding_brew.enabled
+    - celestial_brew,if=talent.flurry_strikes&!(var.apex_rank=4&buff.empty_barrel.up)
+    - keg_smash,if=talent.flurry_strikes
+    - keg_smash,if=talent.scalding_brew
     - keg_smash,if=buff.empty_barrel.up
-    - keg_smash,if=cooldown.keg_smash.charges=1+talent.stormstouts_last_keg.enabled
+    - keg_smash,if=cooldown.keg_smash.charges=1+talent.stormstouts_last_keg
     - breath_of_fire
     - empty_the_cellar
     - rushing_jade_wind
     - keg_smash
     - blackout_kick
-    - tiger_palm,if=talent.aspect_of_harmony.enabled&energy>50
+    - tiger_palm,if=talent.aspect_of_harmony&energy>50
     - tiger_palm,if=energy>65
     - expel_harm
 
