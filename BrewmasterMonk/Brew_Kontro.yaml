@@ -1,4 +1,4 @@
-version: 1.4
+version: 1.5
 author: Kontroved
 spec: 268
 name: BrewMonk by Kontro
@@ -15,7 +15,7 @@ config:
         value: 0
       - label: "High-Key, Survivability Focused"
         value: 1
-    default: 1
+    default: 0
   features:
     label: "Features"
     type: multi_select
@@ -88,8 +88,8 @@ lists:
 
   defensives:
     - tigers_lust,name="Tiger's Lust",if=player.rooted&var.tigers_lust_usage
-    - purifying_brew,delay=500,name="Purifying Brew (High Charge)",if=cooldown.purifying_brew.charges_fractional>=1.8&stagger.pct>=20
-    - purifying_brew,name="Purifying Brew (Heavy Stagger)",if=var.heavy_stagger&cooldown.purifying_brew.charges_fractional>=1
+    - purifying_brew,delay=500,name="Purifying Brew (High Charge)",if=cooldown.purifying_brew.charges>1.8&stagger.pct>=1&!buff.empty_barrel.up
+    - purifying_brew,delay=500,name="purifying brew eleveted or high stacker",if=buff.elevated_stagger.up&var.heavy_stagger
     - celestial_brew,name="Celestial Brew",if=health.pct<=var.celestial_hp_pct
     - celestial_infusion,name="Celestial Infusion",if=health.pct<=config.celestial_hp_pct
     - fortifying_brew,name="Fortifying Brew",if=health.pct<=var.fortifying_brew_pct|var.heavy_stagger
@@ -99,17 +99,16 @@ lists:
     - expel_harm,name="Expel Harm (30% HP)",if=health.pct<=30&energy>=15
 
   interrupts:
-    - target_enemy,delay=100,name="auto_target Interrupt",if=(interrupts.5y.ready|interrupts.5y.count>=1)&!interrupts.target.ready&enemies.inrange(5)>=1&var.auto_swap
-    - target_enemy,delay=100,name="auto_target Stun",if=interrupts.5y.stun.ready&!interrupts.target.stun.ready&cooldown.paralysis.ready&enemies.inrange(5)>=1&var.auto_swap
-    - target_enemy,delay=300,name="range tab, if target ! casting",if=!interrupts.target.ready&target.range>6&enemies.inrange(5)>=1
-       # Primary Interrupt
-    - spear_hand_strike,name="Interrupt Target",if=config.interrupt_target&((config.interrupt_all&target.casting.interruptible)|interrupts.target.ready)&target.casting.elapsed>=0.2&(target.casting.remains<1|target.channeling)
-    - spear_hand_strike.mouseover,name="Interrupt Mouseover",if=config.interrupt_mouseover&((config.interrupt_all&mouseover.casting.interruptible)|interrupts.mouseover.ready)&interrupts.mouseover.ready&mouseover.casting.elapsed>=0.2&(mouseover.casting.remains<1|mouseover.channeling)
-    - spear_hand_strike.focus,name="Interrupt Focus",if=config.interrupt_focus&((config.interrupt_all&focus.casting.interruptible)|interrupts.focus.ready)&interrupts.focus.ready&focus.casting.elapsed>=0.2&(focus.casting.remains<1|focus.channeling)
-       # CC Interrupt
+      # Interrupts
+    - spear_hand_strike,if=interrupt.target.check
+    - spear_hand_strike.mouseover,if=interrupt.mouseover.check
+    - spear_hand_strike.focus,if=interrupt.focus.check
+
     - paralysis,name="Paralysis Target (CC)",if=interrupts.target.stun.ready
+    - paralysis,name="Paralysis CC",if=interrupt.cc.check&!(cooldown.spear_hand_strike.ready&interrupts.target.check)
+    - paralysis.mouseover,name="Paralysis Mouseover (CC)",if=interrupts.mouseover.cc.ready
     - paralysis.mouseover,name="Paralysis Mouseover (CC)",if=interrupts.mouseover.stun.ready
-    - leg_sweep,name="Leg Sweep (AoE)",if=((interrupts.10y.stun.count>=2|interrupts.10y.count>=2)&talent.tiger_tail_sweep)|(interrupts.6y.stun.count>=2|interrupts.6y.count>=2)
+    - leg_sweep,name="Leg Sweep (AoE)",if=interrupt.stun.aoe.check
 
   pre_combat:
     - breath_of_fire,name="BoF Pre-Combat",range_check=none,if=!buff.charred_passions.up
@@ -118,16 +117,14 @@ lists:
   taunt:
     - provoke,name="Taunt",if=target.threat<2&target.combat&target.threat!=-1
     - provoke.mouseover,name="Taunt MO",if=mouseover.threat<2&mouseover.combat&mouseover.threat!=-1&mouseover.exists
-    #- keg_smash,name="Keg Taunt",if=target.threat<2&target.combat&target.threat!=-1&cooldown.provoke.remains>1
-    #- keg_smash.mouseover,name="Keg Taunt MO",if=mouseover.threat<2&mouseover.combat&mouseover.threat!=-1&cooldown.provoke.remains>1
 
   APL:
     - touch_of_death,name="Touch of Death (Prio 1)"
     - keg_smash,name="Keg Smash (Prio 2)",if=cooldown.keg_smash.charges=2
     - black_ox_brew,name="Black Ox Brew (Prio 3)",if=talent.aspect_of_harmony&cooldown.celestial_brew.charges_fractional<1|cooldown.celestial_infusion.charges_fractional<1
-    - black_ox_brew,name="Black Ox Brew (Prio 4)",if=!talent.aspect_of_harmony&energy<40
-    - celestial_brew,name="Celestial Brew (Prio 5)",if=cooldown.celestial_brew.charges_fractional>1.8&!buff.empty_barrel.up&!buff.celestial_brew.up&cooldown.keg_smash.charges<2&!buff.fortifying_brew.up&config.mode=1
-    - celestial_infusion,name="Celestial Infusion (Prio 6)",if=cooldown.celestial_infusion.charges_fractional>1.8&!buff.empty_barrel.up&!buff.celestial_infusion.up&cooldown.keg_smash.charges<2&!buff.fortifying_brew.up&config.mode=1
+    - black_ox_brew,name="Black Ox Brew (Prio 4)",if=!talent.aspect_of_harmony&energy<40&cooldown.celest_infusion.down
+    - celestial_brew,name="Celestial Brew (Prio 5)",if=cooldown.celestial_brew.charges_fractional>1.8&!buff.empty_barrel.up&!buff.celestial_brew.up&!buff.fortifying_brew.up&config.mode=1
+    - celestial_infusion,name="Celestial Infusion (Prio 6)",if=cooldown.celestial_infusion.charges_fractional>1.8&!buff.empty_barrel.up&!buff.celestial_infusion.up&!buff.fortifying_brew.up&config.mode=1
     - celestial_brew,name="Celestial Brew (Prio 7)",if=buff.450711.up&!buff.empty_barrel.up
     - celestial_infusion,name="Celestial Infusion (Prio 8)",if=buff.450711.up&!buff.empty_barrel.up
     - keg_smash,name="Keg Smash (Prio 9)",if=buff.450711.up&buff.empty_barrel.up
@@ -138,17 +135,19 @@ lists:
     - celestial_brew,name="Celestial Brew (Prio 14)",if=!(var.apex_rank=4&buff.empty_barrel.up)&target.time_to_die<15&(buff.aspect_of_harmony.icon=5041800||buff.aspect_of_harmony.icon=5041790)
     - celestial_infusion,name="Celestial Infusion (Prio 15)",if=!(var.apex_rank=4&buff.empty_barrel.up)&buff.aspect_of_harmony.icon=5041790
     - celestial_infusion,name="Celestial Infusion (Prio 16)",if=!(var.apex_rank=4&buff.empty_barrel.up)&target.time_to_die<15&(buff.aspect_of_harmony.icon=5041800||buff.aspect_of_harmony.icon=5041790)
-    - purifying_brew,name="Purifying Brew (Prio 17)",if=!(var.apex_rank>=1&buff.empty_barrel.up)&stagger.pct>1&cooldown.purifying_brew.charges_fractional>=1
+    #- purifying_brew,delay=200,name="Purifying Brew (Prio 17)",if=!(var.apex_rank>=1&buff.empty_barrel.up)&stagger.pct>30&cooldown.purifying_brew.charges_fractional>=1
     - fortifying_brew,name="Fortifying Brew (Prio 18)",if=!(var.apex_rank=4&buff.empty_barrel.up)&!buff.celestial_infusion.up&config.features.has(5)
     - chi_burst,name="Chi Burst (Prio 19)"
+    - invoke_niuzao_the_black_ox,name="Invoke Niuzao the Black Ox (Prio 23)"
+    - tiger_palm,if=buff.blackout_combo.up&cooldown.blackout_kick.remains<1.3
     - exploding_keg.player,name="Exploding Keg (Prio 20)",if=cooldown.keg_smash.charges_fractional<1
     - empty_the_cellar,name="Empty the Cellar (Prio 21)",if=talent.aspect_of_harmony&(cooldown.celestial_brew.remains>15|cooldown.celestial_infusion.remains>15)
     - empty_the_cellar,name="Empty the Cellar (Prio 22)",if=!talent.aspect_of_harmony&buff.empty_the_cellar.remains<1.5
-    - invoke_niuzao_the_black_ox,name="Invoke Niuzao the Black Ox (Prio 23)"
     - breath_of_fire,name="Breath of Fire (Prio 24)",if=cooldown.blackout_kick.remains>1.5&!buff.empty_barrel.up&cooldown.keg_smash.charges<1+talent.stormstouts_last_keg
     - tiger_palm,name="Tiger Palm (Prio 25)",if=buff.blackout_combo.up
     - celestial_brew,name="Celestial Brew (Prio 26)",if=talent.flurry_strikes&!(var.apex_rank=4&buff.empty_barrel.up)
     - celestial_infusion,name="Celestial Infusion (Prio 27)",if=talent.flurry_strikes&!(var.apex_rank=4&buff.empty_barrel.up)
+    - breath_of_fire,name="Breath of Fire (Prio 28)",if=talent.flurry_strikes
     - keg_smash,name="Keg Smash (Prio 28)",if=talent.flurry_strikes
     - keg_smash,name="Keg Smash (Prio 29)",if=talent.scalding_brew
     - keg_smash,name="Keg Smash (Prio 30)",if=buff.empty_barrel.up
@@ -172,6 +171,7 @@ lists:
     - call_action_list,name=combat_checks
     - call_action_list,name=interrupts
     - call_action_list,name=auto_target
+    - call_action_list,name=auto_dispel
     - call_action_list,name=taunt, if=var.taunt_usage
     - call_action_list,name=defensives
     - call_action_list,name=self_heals
