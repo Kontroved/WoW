@@ -1,4 +1,4 @@
-version: 2.0
+version: 3.0
 author: Kontroved
 spec: 268
 name: BrewMonk by Kontro
@@ -7,11 +7,21 @@ description: Brewmaster Monk Rotation by Kontroved
 entry: main
 
 config:
+  dps_mode:
+    type: toggle
+    label: "DPS Mode"
+    description: "Use CI less"
+    spell: 115181
+  spam_purifying_brew:
+    type: toggle
+    label: "spam Puryfying Brew"
+    spell: 119582
+    description: "Spam Purifying Brew at set %"
   features:
     label: "Features"
     type: multi_select
     options:
-      - label: "Taunt Usage (Keg & Provoke)"
+      - label: "Taunt Usage (Provoke)"
         value: 2
       - label: "Auto Freedom"
         value: 3
@@ -25,7 +35,7 @@ config:
     type: slider
     min: 0
     max: 100
-    default: 90
+    default: 100
     show_override: true
   expel_harm_pct:
     label: "Expel Harm HP %"
@@ -39,29 +49,29 @@ config:
     type: slider
     min: 0
     max: 100
-    default: 35
+    default: 20
     show_override: true
   purifying_brew_pct:
     label: "Purifying Brew Stagger %"
     type: slider
     min: 0
-    max: 150
-    default: 80
+    max: 200
+    default: 130
     show_override: true
-  purifying_brew_charges_pct:
-    label: "Purifying Brew Charges Stagger %"
+  purifying_brew_spam_pct:
+    label: "SPAM Purifying Brew Stagger %"
     type: slider
     min: 0
-    max: 150
-    default: 20
+    max: 200
+    default: 1
     show_override: true
-  ttd_cd_usage:
-    label: "TTD CD Usage Threshold"
-    type: slider
-    min: 0
-    max: 30
-    default: 10
-    show_override: true
+  # ttd_cd_usage:
+  #   label: "TTD CD Usage Threshold"
+  #   type: slider
+  #   min: 0
+  #   max: 30
+  #   default: 10
+  #   show_override: true
 variables:
     opener_usage: config.features.has(0)
     precombat_usage: config.features.has(1)
@@ -71,7 +81,7 @@ variables:
     expel_harm_pct: config.expel_harm_pct
     fortifying_brew_pct: config.fortifying_brew_pct
     purifying_brew_pct: config.purifying_brew_pct
-    purifying_brew_charges_pct: config.purifying_brew_charges_pct
+    purifying_brew_spam_pct: config.purifying_brew_spam_pct
     light_stagger: stagger.pct<29
     moderate_stagger: stagger.pct>=30&stagger.pct<60
     heavy_stagger: stagger.pct>=80
@@ -83,26 +93,29 @@ variables:
     aspect_of_harmony_spender: buff.450711.up
     aspect_of_harmony_damage: buff.450763.up
     aspect_of_harmony_heal: buff.450769.up
-    defensives_up: buff.celestial_infusion.up|buff.fortifying_brew.up
+    defensives_up: buff.celestial_infusion.up|buff.fortifying_brew.up|stagger.pct<100
+    spam_purifying_brew: config.spam_purifying_brew
+    dps_mode: config.dps_mode
 lists:
   combat_checks:
     - return,if=!target.valid&!((config.auto_combat.has(1)&target.quest_mob&target.enemy&!target.dead)|(config.auto_combat.has(2)&target.combat&target.enemy&!target.dead)|(config.auto_combat.has(3)&target.targeting_party&target.enemy&!target.dead))
     - return,if=!target.valid&config.auto_combat.has(0)
 
   defensives:
-    - purifying_brew,delay=500,if=cooldown.purifying_brew.charges>1.7&stagger.pct>=var.purifying_brew_charges_pct&!buff.empty_barrel.up
-    - purifying_brew,delay=500,if=((buff.elevated_stagger.up&talent.high_tolerance)&stagger.pct>80)|stagger.pct>var.purifying_brew_pct&!buff.empty_barrel.up
+    - purifying_brew,delay=500,if=(stagger.pct>var.purifying_brew_pct|stagger.pct>1&cooldown.purifying_brew.charges_fractional=2)&!buff.empty_barrel.up
+    - purifying_brew,delay=500,if=stagger.pct>var.purifying_brew_spam_pct&!buff.empty_barrel.up&var.spam_purifying_brew&cooldown.purifying_brew.charges_fractional>1.4
     - celestial_brew,,if=health.pct<=var.celestial_hp_pct&!buff.empty_barrel.up&cooldown.keg_smash.charges_fractional<1.2
-    - celestial_infusion,if=health.pct<=config.celestial_hp_pct&!buff.empty_barrel.up&!buff.celestial_infusion.up&cooldown.keg_smash.charges_fractional<1.2
+    - celestial_infusion,if=health.pct<=config.celestial_hp_pct&!buff.empty_barrel.up&!buff.celestial_infusion.up&cooldown.keg_smash.charges_fractional<1.2&!var.dps_mode
     - celestial_infusion,if=incoming_cast.tank.up&!var.defensives_up
     - fortifying_brew,if=incoming_cast.tank.up&!var.defensives_up&cooldown.celestial_infusion.remains>gcd
     - fortifying_brew,name="Fortifying Brew",if=(health.pct<=var.fortifying_brew_pct|stagger.pct>=120)&!buff.invoke_niuzao_the_black_ox.up
 
-  self_heals:
-    - expel_harm,name="Expel Harm (Config HP)",if=health.pct<=var.expel_harm_pct&energy>=15&cooldown.expel_harm.spell_count>=4
-  
+  self_heals: 
+    - expel_harm,name="Expel Harm (Config HP)",if=health.pct<=var.expel_harm_pct
+
   interrupts:
     - spear_hand_strike,if=interrupt.target.check
+    #- spear_hand_strike,if=interrupt.target.check|(incoming_cast.5y.kickable.count>=1&incoming_cast.5y.kickable.remains<=0.2)
     - spear_hand_strike.mouseover,if=interrupt.mouseover.check
     - spear_hand_strike.focus,if=interrupt.focus.check
 
@@ -128,7 +141,9 @@ lists:
   APL:
     - touch_of_death,name="Touch of Death (Prio 1)"
     - breath_of_fire,range_check=none,if=prev_gcd.1.keg_smash|prev_gcd.2.keg_smash
+    - blackout_kick,if=active.enemies>=3
     - keg_smash,name="Keg Smash (Prio 2)",if=cooldown.keg_smash.charges=2
+    - blackout_kick,if=active.enemis<3
     - black_ox_brew,name="Black Ox Brew (Prio 3)",if=talent.aspect_of_harmony&(cooldown.celestial_brew.charges_fractional<1|cooldown.celestial_infusion.charges_fractional<1)
     - black_ox_brew,name="Black Ox Brew (Prio 4)",if=!talent.aspect_of_harmony&(energy<40&cooldown.celestial_infusion.down)
     - celestial_brew,name="Celestial Brew (Prio 5)",if=cooldown.celestial_brew.charges_fractional>1.8&!buff.empty_barrel.up&!buff.celestial_brew.up&!buff.fortifying_brew.up
@@ -144,7 +159,7 @@ lists:
     - celestial_infusion,name="Celestial Infusion (Prio 15)",if=!(var.apex_rank=4&buff.empty_barrel.up)&buff.aspect_of_harmony.icon=5041790
     - celestial_infusion,name="Celestial Infusion (Prio 16)",if=!(var.apex_rank=4&buff.empty_barrel.up)&target.time_to_die<15&(buff.aspect_of_harmony.icon=5041800||buff.aspect_of_harmony.icon=5041790)
     - fortifying_brew,name="Fortifying Brew (Prio 18)",if=!(var.apex_rank=4&buff.empty_barrel.up)&!buff.celestial_infusion.up&config.features.has(5)
-    - chi_burst,name="Chi Burst (Prio 19)",if=player.standing.time>1
+    - chi_burst,name="Chi Burst (Prio 19)",if=player.standing.time>2
     - invoke_niuzao_the_black_ox,name="Invoke Niuzao the Black Ox (Prio 23)"
     - tiger_palm,if=buff.blackout_combo.up&cooldown.blackout_kick.remains<1.3
     - exploding_keg.player,name="Exploding Keg (Prio 20)",if=cooldown.keg_smash.charges_fractional<1
@@ -165,7 +180,7 @@ lists:
     - keg_smash,name="Keg Smash (Prio 35)"
     - blackout_kick,name="Blackout Kick (Prio 36)"
     - tiger_palm,name="Tiger Palm (Prio 37)",if=talent.aspect_of_harmony&energy>50
-    - tiger_palm,name="Tiger Palm (Prio 38)",if=energy>65
+    - tiger_palm,name="Tiger Palm (Prio 38)",if=energy>65&cooldown.blackout_kick.remains>gcd.remains
     #- expel_harm,name="Expel Harm (Prio 39)",if=energy>30
 
   main:
@@ -181,6 +196,8 @@ lists:
     - call_action_list,name=self_heals
     - call_action_list,name=auto_freedom&config.features.has(3)
         # target combat
+    - return,if=!target.alive
     - call_action_list,name=auto_purge_enrage
+    - call_action_list,name=taunt
     - combat_potion, if=(buff.algethar_puzzle.up|buff.invoke_niuzao_the_black_ox.up)&combat_potion.ready
     - call_action_list,name=APL
