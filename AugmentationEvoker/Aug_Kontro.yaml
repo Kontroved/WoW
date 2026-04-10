@@ -1,4 +1,4 @@
-version: 2.0
+version: 3.2
 author: Kontroved
 spec: 1473
 name: AUG by Kontro
@@ -9,171 +9,114 @@ entry: main
 movement_allowed: buff.hover.up|buff.spatial_paradox.up
 
 config:
+  breath_usage:
+    type: toggle
+    label: "Breath of Eons Usage"
+    spell: 442204
+    description: "toggle Breath usage"
+    
   features2:
     label: "Features"
     type: multi_select
     options:
-      - label: "Wing Buffet Interrupt (care knockback)"
-        value: 0
       - label: "PreCombat"
         value: 1
-      - label: "Breath of Eons Usage"
-        value: 2
-    default: [0,1]
+      - label: "Auto Blessing of the Bronze"
+        value: 3
+    default: [1,3]
   prescience_targets:
     type: dropdown
     label: "Prescience Targets"
     options:
-      - label: "all"
+      - label: "all/Raid"
         value: 0
       - label: "only dps"
         value: 1
     default: 0
-  # Defensive Settings
   obsidian_scales_hp_pct:
     label: "Obsidian Scales HP%"
     type: slider
     min: 0
     max: 100
     default: 60
-  zephyr_members:
-    label: "Zephyr party/raid members"
-    type: slider
-    min: 0
-    max: 6
-    default: 6
-  # Rotation Settings
-  cc_numbers:
-    label: "CC Interrupt Enemy Count"
-    type: slider
-    min: 0
-    max: 5
-    default: 2
-  fb_empower_cap:
-    label: "Fire Breath Empower Cap"
-    type: slider
-    min: 1
-    max: 3
-    default: 1
-  uh_empower_cap:
-    label: "Upheaval Empower Cap"
-    type: slider
-    min: 1
-    max: 3
-    default: 1
-    
   ebon_might_pandemic_threshold:
     label: "Ebon Might Pandemic 0.X Threshold"
     type: slider
     min: 1
     max: 6
-    default: 4
-  ttd_cd_usage:
-    label: "TTD"
+    default: 3
+  time_to_die:
+    label: "Time to Die (Empoweres and Ebon Might)"
+    type: slider
     min: 0
-    max: 30
-    default: 15
-
+    max: 20
+    default: 10
 variables:
   wing_buffet_usage: config.features2.has(0)
   precombat_usage: config.features2.has(1)
   breath_of_eons_usage: config.features2.has(2)
+  breath_usage: config.breath_usage
+  blessing_usage: config.features2.has(3)
   obsidian_scales_hp_pct: config.obsidian_scales_hp_pct
-  zephyr_members: config.zephyr_members
-  fb_empower_cap: config.fb_empower_cap
-  uh_empower_cap: config.uh_empower_cap
-  cc_numbers: config.cc_numbers
   ebon_might_pandemic_threshold: config.ebon_might_pandemic_threshold/10
-  temp_wound: debuff.temporal_wound.remais
-  ttd: fight_remains<9999|time_to_die<9999&(fight_remains>config.ttd_cd_usage)
-  ttd2: fight_remains>?time_to_die*var.ttd
+  temp_wound: debuff.temporal_wound.remains
+  ttd2: (fight_remains<?time_to_die)*var.ttd
+  ttd: (fight_remains<9999|time_to_die<9999)
+  ttd3: var.ttd2>config.time_to_die
+  stopcast: incoming_cast.stopcasting.remains<0.3&incoming_cast.stopcasting.up
 lists:
   main:
-    - call_action_list,name=fb_release
-    - call_action_list,name=uh_release
     - call_action_list,name=spell_queue
     - call_action_list,name=sanity_checks
-    - call_action_list,name=precombat,if=target.enemy&target.alive&!player.combat&var.precombat_usage
-    - call_action_list,name=auto_target_ranged
     - call_action_list,name=auto_heal
-    - call_action_list,name=combat_checks
+    - call_action_list,name=auto_target_ranged
+    - call_action_list,name=precombat
     - call_action_list,name=interrupts
     - call_action_list,name=defensives
-    - call_action_list,name=dispels
-    - call_action_list,name=maintenance
-    - call_action_list,name=core
-    - call_action_list,name=filler
-  combat_checks:
-    - return,if=!target.valid&!((config.auto_combat.has(1)&target.quest_mob&target.enemy&!target.dead)|(config.auto_combat.has(2)&target.combat&target.enemy&!target.dead)|(config.auto_combat.has(3)&target.targeting_party&target.enemy&!target.dead))
-    - return,if=!target.valid&config.auto_combat.has(0)
+    - call_action_list,name=auto_dispel
+    - stop_casting,if=var.stopcast
+    - return,if=auto_combat.target&!var.stopcast
+    - call_action_list,name=simple
+
+
   precombat:
-    - blessing_of_the_bronze,if=group.missing.blessing_of_the_bronze.lowest.range<=40
-    - source_of_magic,name="PreCombat Source of Magic",cycle=healers,if=cycle.buff.source_of_magic.down
+    - blessing_of_the_bronze,range_check=none,if=buff.blessing_of_the_bronze.down
+    - source_of_magic,name="PreCombat Source of Magic",cycle=healers,if=cycle.buff.source_of_magic.down&!player.inraid
     - blistering_scales,cycle=tanks,if=cycle.buff.blistering_scales.down
-    - prescience,name="Prescience PreCombat",if=config.prescience_targets=0
-    - prescience,cycle=dps,if=cycle.buff.prescience.down&config.prescience_targets=1
-    - ebon_might,name="Ebon Might PreCombat",if=buff.ebon_might.down
-  dispels:
-    - expunge,cycle=party,if=cycle.dispelable.list.expunge
-    - cauterizing_flame,cycle=party,if=cycle.dispelable.list.cauterizing_flame
+    - prescience,if=player.inraid
+    - prescience,cycle=dps,if=cycle.buff.prescience.down&cycle.range<=25&config.prescience_targets=1&!cycle.range=0&!player.inraid
+    - ebon_might,name="Ebon Might PreCombat",cycle=tanks,if=!cycle.buff.395296.up&cycle.combat
+
   interrupts:
-    - quell,interrupt=true,if=casting.remains<0.1&config.interrupt_target&(config.interrupt_all&target.casting.interruptible|interrupts.target.ready)&target.casting.elapsed>=0.1&(target.casting.remains<1|target.channeling)
-    - quell.mouseover,interrupt=true,if=casting.remains<0.1&config.interrupt_mouseover&(config.interrupt_all&mouseover.casting.interruptible|interrupts.mouseover.ready)&interrupts.mouseover.ready&mouseover.casting.elapsed>=0.1&(mouseover.casting.remains<1|mouseover.channeling)
-    - quell.focus,interrupt=true,if=casting.remains<0.1&config.interrupt_focus&(config.interrupt_all&focus.casting.interruptible|interrupts.focus.ready)&interrupts.focus.ready&focus.casting.elapsed>=0.1&(focus.casting.remains<1|focus.channeling)
-    - tail_swipe,if=interrupts.8y.stun.count>=var.cc_numbers|interrupts.8y.count>=var.cc_numbers
-    - wing_buffet,if=(interrupts.8y.count>=var.cc_numbers|interrupts.8y.stun.count>=var.cc_numbers)&cooldown.tail_swipe.remains>gcd+1&target.range>3&var.wing_buffet_usage
+    - quell,if=interrupt.target.check
+    #- quell,interrupt=true,if=incoming_cast.25y.kickable.important.count>=1&!player.casting
+    - quell.mouseover,if=interrupt.mouseover.check
+    - quell.focus,if=interrupt.focus.check
+    - tail_swipe,if=interrupt.stun.aoe.check
+  
   defensives:
-    - obsidian_scales,delay=100,if=health.pct<=var.obsidian_scales_hp_pct
-  # bombardment_spread:
-  #   - eruption,name="eruption spread 2ME stacks",if=active_enemies>=2&buff.mass_eruption.stack=2
-  #   - target_enemy,name="first tab",ignore_gcd=true,delay=1600,casting_check=eruption,if=active_enemies>=2&buff.mass_eruption.stack=2
-  #   - eruption,name="eruption spread 1ME stack",if=active_enemies>=2&buff.mass_eruption.stack=1
-  #   #- target_enemy,name="back",hotkey=15,modifier=42,delay=4000,casting_check=eruption,if=active_enemies>=2&buff.mass_eruption.stack=1&nameplates.debuff.bombardments.count=1
-  maintenance:
-    #- ebon_might,casting_check=any,name="EB maintenance",if=var.ttd&casting.remains<0.3&(((buff.ebon_might.remains-action.ebon_might.cast_time)<=10.9*var.ebon_might_pandemic_threshold))
-    - prescience,name="Prescience PreCombat",if=config.prescience_targets=0|cooldown.prescience.charges=2
-    - prescience,cycle=dps,if=cycle.buff.prescience.down&config.prescience_targets=1
-    - ebon_might,name="EB maintenance",if=var.ttd&((buff.ebon_might.remains-action.ebon_might.cast_time)<=10.9*var.ebon_might_pandemic_threshold)
-  core:
-    - tip_the_scales,ignore_usable=true,name="Tip the Scales",if=prev_gcd.1.fire_breath|!talent.molten_embers|(cooldown.upheaval.remains<cooldown.fire_breath.remains)&!buff.tip_the_scales.up
-    - target_enemy,name="first tab",ignore_usable=true,delay=1500,casting_check=eruption,if=enemies.25y>=2&buff.mass_eruption.stack=2
-    - target_enemy,name="second tab",ignore_usable=true,delay=1500,casting_check=fire_breath,if=enemies.25y>=2&debuff.bombardments.up
-    - target_enemy,name="third tab",ignore_usable=true,delay=1500,casting_check=upheaval,if=enemies.25y>=2&debuff.bombardments.up
-    #- eruption,casting_check=any,name="dump Eruption breath",if=casting.remains<0.2&(buff.iminent_destruction&essence.deficit=0)
-    - eruption,name="dump Eruption breath",if=buff.iminent_destruction&essence.deficit=0
-    #- breath_of_eons,casting_check=any,name="BOE on CD",range_check=none,if=casting.remains<0.2&var.ttd&var.breath_of_eons_usage&!player.moving&player.combat
-    - breath_of_eons,name="BOE on CD",ignore_cooldown=true,range_check=none,if=var.ttd&var.breath_of_eons_usage&!player.moving&player.combat&cooldown.breath_of_eons.remains<1
-    #- call_action_list,name=fb,if=cooldown.breath_of_eons.remains>2|!var.breath_of_eons_usage
-    - call_action_list,name=fb_release,casting_check=fire_breath
-    - fire_breath,if=buff.ebon_might.remains>1&!player.moving
-    #- call_action_list,name=uh,if=cooldown.breath_of_eons.remains>2|!var.breath_of_eons_usage
-    - call_action_list,name=uh_release,casting_check=upheaval
-    - upheaval,ignore_movement=buff.tip_the_scales.buff.up,if=buff.ebon_might.remains>1&!player.moving
-    #- eruption,casting_check=any,name="eruption EB",if=casting.remains<0.2&((buff.ebon_might.remains>action.eruption.execute_time|essence.deficit=0|buff.essence_burst.stack=2&cooldown.ebon_might.remains>4))
-    - eruption,name="eruption EB",if=(buff.ebon_might.remains>action.eruption.execute_time|essence.deficit=0|buff.essence_burst.stack=2&cooldown.ebon_might.remains>4)
-    - blistering_scales,cycle=tanks,if=cycle.buff.blistering_scales.down
-    - blessing_of_the_bronze,if=group.missing.blessing_of_the_bronze.lowest.range<=40
-  filler:
-    - living_flame,name="Living Flame",if=(talent.pupil_of_alexstrasza&active_enemies>1|!talent.echoing_strike|talent.chrono_flame)|buff.leaping_flames.up
-    - azure_strike,name="Azure Strike. Last resort"
-  fb:
-    #- fire_breath,casting_check=any,if=casting.remains<0.3&buff.ebon_might.remains>1
-    - fire_breath,if=buff.ebon_might.remains>1&!player.moving
-    - fire_breath,name="FB1",ignore_usable=true,ignore_cooldown=true,casting_check=fire_breath,range_check=none,if=player.empower_stage>=1&(var.fb_empower_cap=1|buff.ebon_might.buff.remains<=2|talent.molten_embers)
-    - fire_breath,name="FB2",ignore_usable=true,ignore_cooldown=true,casting_check=fire_breath,range_check=none,if=player.empower_stage>=3&(buff.ebon_might.buff.remains>2&var.fb_empower_cap=2)
-    - fire_breath,name="FB3",ignore_usable=true,ignore_cooldown=true,casting_check=fire_breath,range_check=none,if=player.empower_stage>=4&(buff.ebon_might.buff.remains>2&var.fb_empower_cap=3)
-  fb_release:
-    - fire_breath,name="FB1",ignore_usable=true,ignore_cooldown=true,casting_check=fire_breath,range_check=none,if=player.empower_stage>=1&(var.fb_empower_cap=1|buff.ebon_might.buff.remains<=2|talent.molten_embers)
-    - fire_breath,name="FB2",ignore_usable=true,ignore_cooldown=true,casting_check=fire_breath,range_check=none,if=player.empower_stage>=3&(buff.ebon_might.buff.remains>2&var.fb_empower_cap=2)
-    - fire_breath,name="FB3",ignore_usable=true,ignore_cooldown=true,casting_check=fire_breath,range_check=none,if=player.empower_stage>=4&(buff.ebon_might.buff.remains>2&var.fb_empower_cap=3)
-  uh_release:
-    - upheaval,name="UH1",ignore_usable=true,ignore_cooldown=true,casting_check=upheaval,range_check=none,if=player.empower_stage>=1&(var.uh_empower_cap=1|buff.ebon_might.buff.remains<=2|active_enemies=1)
-    - upheaval,name="UH2",ignore_usable=true,ignore_cooldown=true,casting_check=upheaval,range_check=none,if=player.empower_stage>=3&(buff.ebon_might.buff.remains>2&var.uh_empower_cap=2)
-    - upheaval,name="UH3",ignore_usable=true,ignore_cooldown=true,casting_check=upheaval,range_check=none,if=player.empower_stage>=4&(buff.ebon_might.buff.remains>2&var.uh_empower_cap=3)
-  uh:
-    #- upheaval,casting_check=any,if=casting.remains<0.3&buff.ebon_might.remains>1
-    - upheaval,if=buff.ebon_might.remains>1
-    - upheaval,ignore_movement=buff.tip_the_scales.up,if=buff.ebon_might.remains>1
-    - upheaval,name="UH1",ignore_usable=true,ignore_cooldown=true,casting_check=upheaval,range_check=none,if=player.empower_stage>=1&(var.uh_empower_cap=1|buff.ebon_might.buff.remains<=2|active_enemies=1)
-    - upheaval,name="UH2",ignore_usable=true,ignore_cooldown=true,casting_check=upheaval,range_check=none,if=player.empower_stage>=3&(buff.ebon_might.buff.remains>2&var.uh_empower_cap=2)
-    - upheaval,name="UH3",ignore_usable=true,ignore_cooldown=true,casting_check=upheaval,range_check=none,if=player.empower_stage>=4&(buff.ebon_might.buff.remains>2&var.uh_empower_cap=3)
+    - obsidian_scales,delay=100,if=player.health.pct<=var.obsidian_scales_hp_pct&incoming_cast.target_me.remains<0.5&incoming_cast.target_me.up&!buff.obsidian_scales.up
+    - obsidian_scales,if=incoming_cast.target_me.important.remains<0.1&incoming_cast.target_me.important.up&!buff.obsidian_scales.up
+    - zephyr, if=incoming_cast.zephyr.remains<1.3&incoming_cast.zephyr.up
+
+  simple:
+    - eruption.spread,if=pred.debuff.bombardments.up&buff.mass_eruption.up
+    - upheaval,ignore_usable=true,ignore_cooldown=true,casting_check=upheaval,if=player.empower_stage>=1&enemies_around_target<=5
+    - upheaval,ignore_usable=true,ignore_cooldown=true,casting_check=upheaval,if=player.empower_stage>=3&enemies_around_target>5
+    - upheaval,ignore_usable=true,ignore_cooldown=true,casting_check=upheaval,if=player.empower_stage>=4&enemies_around_target<active_enemies
+    - prescience,cycle=dps,if=cycle.prescience.down&cycle.range>0&!player.inraid
+    - prescience,if=group.count(!cycle.dead)>0|player.inraid
+    - ebon_might,if=(3+action.ebon_might.cast_time>=buff.395296.remains)&var.ttd3
+    - eruption,casting_check=ebon_might,if=player.casting.remains<0.2
+    - tip_the_scales,if=cooldown.upheaval.remains<1&usable.fire_breath&!cooldown.fire_breath.ready&var.ttd3
+    - eruption,name="dump Eruption breath",if=buff.iminent_destruction&essence.deficit=0&!buff.mass_eruption.up
+    - breath_of_eons,name="BOE on CD",delay=200,range_check=none,if=var.breath_usage&!player.moving&player.combat&cooldown.breath_of_eons.remains<1&var.ttd3
+    - fire_breath,empower_to=1,if=player.standing.time>=1&!buff.tip_the_scales.up&pred.buff.ebon_might.remains>=1.5&var.ttd3
+    - upheaval,if=buff.tip_the_scales.up&(pred.ebon_might.remains>=1|buff.395296.remains>1)&!player.moving&var.ttd3
+    - upheaval,empower_to=1,if=(!player.moving&pred.buff.ebon_might.remains>=1.5&enemies_around_target<=5)&var.ttd3
+    - upheaval,empower_to=4, if=(player.standing.time>=1&pred.buff.ebon_might.remains>=2.5&enemies_around_target<active_enemies)&var.ttd3
+    - upheaval,empower_to=3, if=(player.standing.time>=1&pred.buff.ebon_might.remains>=2&enemies_around_target>5)&var.ttd3
+    - eruption,if=buff.395296.remains>1.5
+    - eruption,name="eruption EB",if=(pred.buff.ebon_might.remains>action.eruption.cast_time|essence.deficit=0|buff.essence_burst.stack=2&cooldown.ebon_might.remains>4)
+    - living_flame,if=(!cooldown.eruption.ready&buff.395296.remains>=1.3)|(!buff.395296.up)
+    - azure_strike,if=moving.time>=0.7
