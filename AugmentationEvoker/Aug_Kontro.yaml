@@ -24,15 +24,15 @@ config:
       - label: "Auto Blessing of the Bronze"
         value: 3
     default: [1,3]
-  prescience_targets:
-    type: dropdown
-    label: "Prescience Targets"
-    options:
-      - label: "all/Raid"
-        value: 0
-      - label: "only dps"
-        value: 1
-    default: 0
+  # prescience_targets:
+  #   type: dropdown
+  #   label: "Prescience Targets"
+  #   options:
+  #     - label: "all/Raid"
+  #       value: 0
+  #     - label: "only dps"
+  #       value: 1
+  #   default: 0
   obsidian_scales_hp_pct:
     label: "Obsidian Scales HP%"
     type: slider
@@ -84,7 +84,7 @@ lists:
     - source_of_magic,name="PreCombat Source of Magic",cycle=healers,if=cycle.buff.source_of_magic.down&!player.inraid
     - blistering_scales,cycle=tanks,if=cycle.buff.blistering_scales.down
     - prescience,if=player.inraid
-    - prescience,cycle=dps,if=cycle.buff.prescience.down&cycle.range<=25&config.prescience_targets=1&!cycle.range=0&!player.inraid
+    - prescience,cycle=dps,if=cycle.buff.prescience.down&cycle.range<=25&!cycle.range=0&!player.inraid
     - ebon_might,name="Ebon Might PreCombat",cycle=tanks,if=!cycle.buff.395296.up&cycle.combat
 
   interrupts:
