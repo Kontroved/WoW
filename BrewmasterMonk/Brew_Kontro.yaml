@@ -1,4 +1,4 @@
-version: 3.0
+version: 4.0
 author: Kontroved
 spec: 268
 name: BrewMonk by Kontro
@@ -27,6 +27,8 @@ config:
         value: 3
       - label: "Fort brew DPS Usage (not recommended)"
         value: 5
+      - label: "old rotation"
+        value: 7
     default: [2,3]
     show_override: true
   # Defensive Settings
@@ -55,7 +57,7 @@ config:
     label: "Purifying Brew Stagger %"
     type: slider
     min: 0
-    max: 200
+    max: 300
     default: 130
     show_override: true
   purifying_brew_spam_pct:
@@ -65,18 +67,8 @@ config:
     max: 200
     default: 1
     show_override: true
-  # ttd_cd_usage:
-  #   label: "TTD CD Usage Threshold"
-  #   type: slider
-  #   min: 0
-  #   max: 30
-  #   default: 10
-  #   show_override: true
 variables:
-    opener_usage: config.features.has(0)
-    precombat_usage: config.features.has(1)
     taunt_usage: config.features.has(2)
-    tigers_lust_usage: config.features.has(4)
     celestial_brew_pct: config.celestial_hp_pct
     expel_harm_pct: config.expel_harm_pct
     fortifying_brew_pct: config.fortifying_brew_pct
@@ -85,7 +77,6 @@ variables:
     light_stagger: stagger.pct<29
     moderate_stagger: stagger.pct>=30&stagger.pct<60
     heavy_stagger: stagger.pct>=80
-    auto_swap: config.features.has(3)
     apex_rank: talent.bring_me_another.rank
     # Master of Harmony (Aspect of Harmony) auras by spell id
     aspect_of_harmony_driver: buff.450567.up
@@ -93,32 +84,28 @@ variables:
     aspect_of_harmony_spender: buff.450711.up
     aspect_of_harmony_damage: buff.450763.up
     aspect_of_harmony_heal: buff.450769.up
-    defensives_up: buff.celestial_infusion.up|buff.fortifying_brew.up|stagger.pct<100
+    defensives_up: buff.celestial_infusion.up|buff.fortifying_brew.up|stagger.pct<100|buff.invoke_niuzao_the_black_ox.up
     spam_purifying_brew: config.spam_purifying_brew
     dps_mode: config.dps_mode
 lists:
   combat_checks:
     - return,if=!target.valid&!((config.auto_combat.has(1)&target.quest_mob&target.enemy&!target.dead)|(config.auto_combat.has(2)&target.combat&target.enemy&!target.dead)|(config.auto_combat.has(3)&target.targeting_party&target.enemy&!target.dead))
     - return,if=!target.valid&config.auto_combat.has(0)
-
   defensives:
-    - purifying_brew,delay=500,if=(stagger.pct>var.purifying_brew_pct|stagger.pct>1&cooldown.purifying_brew.charges_fractional=2)&!buff.empty_barrel.up
-    - purifying_brew,delay=500,if=stagger.pct>var.purifying_brew_spam_pct&!buff.empty_barrel.up&var.spam_purifying_brew&cooldown.purifying_brew.charges_fractional>1.4
+    - purifying_brew,delay=1000,if=(stagger.pct>var.purifying_brew_pct|(stagger.pct>1&cooldown.purifying_brew.charges_fractional=2))&!buff.empty_barrel.up
+    - purifying_brew,delay=1000,if=stagger.pct>var.purifying_brew_spam_pct&!buff.empty_barrel.up&var.spam_purifying_brew&cooldown.purifying_brew.charges_fractional>1.6
     - celestial_brew,,if=health.pct<=var.celestial_hp_pct&!buff.empty_barrel.up&cooldown.keg_smash.charges_fractional<1.2
     - celestial_infusion,if=health.pct<=config.celestial_hp_pct&!buff.empty_barrel.up&!buff.celestial_infusion.up&cooldown.keg_smash.charges_fractional<1.2&!var.dps_mode
     - celestial_infusion,if=incoming_cast.tank.up&!var.defensives_up
     - fortifying_brew,if=incoming_cast.tank.up&!var.defensives_up&cooldown.celestial_infusion.remains>gcd
-    - fortifying_brew,name="Fortifying Brew",if=(health.pct<=var.fortifying_brew_pct|stagger.pct>=120)&!buff.invoke_niuzao_the_black_ox.up
-
+    - fortifying_brew,name="Fortifying Brew",if=(health.pct<=var.fortifying_brew_pct|stagger.pct>=250)&!buff.invoke_niuzao_the_black_ox.up
   self_heals: 
     - expel_harm,name="Expel Harm (Config HP)",if=health.pct<=var.expel_harm_pct
-
   interrupts:
     - spear_hand_strike,if=interrupt.target.check
     #- spear_hand_strike,if=interrupt.target.check|(incoming_cast.5y.kickable.count>=1&incoming_cast.5y.kickable.remains<=0.2)
     - spear_hand_strike.mouseover,if=interrupt.mouseover.check
     - spear_hand_strike.focus,if=interrupt.focus.check
-
     - paralysis,name="Paralysis Target (CC)",if=interrupts.target.stun.ready
     - paralysis,name="Paralysis CC",if=interrupt.cc.check&!(cooldown.spear_hand_strike.ready&interrupts.target.check)
     - paralysis.mouseover,name="Paralysis Mouseover (CC)",if=interrupts.mouseover.cc.ready
@@ -138,6 +125,57 @@ lists:
   trinkets:
     - trinket_1,if=trinket_1.sync
     - trinket_2,if=trinket_2.sync
+  shadopan: 
+    - touch_of_death
+    - keg_smash,if=active_enemies<2&buff.blackout_combo.up&buff.empty_barrel.up
+    - tiger_palm,if=active_enemies<2&buff.blackout_combo.up&buff.counterstrike.up
+    - breath_of_fire,range_check=none,if=(prev_gcd.1.keg_smash|prev_gcd.2.keg_smash)
+    - keg_smash,if=buff.blackout_combo.up
+    - celestial_infusion,if=cooldown.keg_smash.charges_fractional<1&buff.blackout_combo.up&!buff.empty_barrel.up
+    - purifying_brew,if=cooldown.keg_smash.charges_fractional<1&buff.blackout_combo.up&!buff.empty_barrel.up&stagger.pct>1
+    - exploding_keg.player,if=cooldown.keg_smash.charges_fractional<1&buff.blackout_combo.up&!buff.empty_barrel.up
+    - blackout_kick,if=!buff.blackout_combo.up
+    - breath_of_fire,range_check=none,if=talent.salsalabims_strength.enabled&buff.invoke_niuzao_the_black_ox.up
+    - invoke_niuzao_the_black_ox,if=!buff.fortifying_brew.up&target.range<8
+    - chi_burst,if=!player.moving&player.standing.time>3
+    - keg_smash,if=cooldown.keg_smash.charges_fractional>1&cooldown.blackout_kick.remains>1.5
+    - tiger_palm,if=energy>50
+    - breath_of_fire
+    - keg_smash,if=cooldown.blackout_kick.remains>1.5
+    - keg_smash
+  moh: 
+    - touch_of_death
+    - blackout_kick,if=!buff.blackout_combo.up
+    - invoke_niuzao_the_black_ox,if=!buff.fortifying_brew.up&target.range<8
+    - chi_burst,if=!player.moving&player.standing.time>3
+    - celestial_infusion,if=!buff.450711.up&!buff.empty_barrel.up&prev_gcd.1.205523&!buff.celestial_infusion.up&cooldown.keg_smash.charges_fractional<1.8
+    - tiger_palm,if=buff.blackout_combo.up
+    - breath_of_fire,if=cooldown.keg_smash.charges_fractional=2
+    - keg_smash,if=cooldown.keg_smash.charges_fractional=2
+    - breath_of_fire,if=cooldown.keg_smash.charges_fractional>=1
+    - keg_smash
+    - breath_of_fire
+    - tiger_palm,if=energy>=50
+  main:
+    - call_action_list,name=spell_queue
+    - call_action_list,name=sanity_checks
+    - call_action_list,name=auto_heal
+    - call_action_list,name=auto_target
+      # user combat
+    - return,if=auto_combat.player
+    - call_action_list,name=interrupts
+    - call_action_list,name=auto_dispel
+    - call_action_list,name=defensives
+    - call_action_list,name=self_heals
+    - call_action_list,name=auto_freedom&config.features.has(3)
+        # target combat
+    - return,if=!target.alive
+    - call_action_list,name=auto_purge_enrage
+    - call_action_list,name=taunt
+    - combat_potion, if=(buff.algethar_puzzle.up|buff.invoke_niuzao_the_black_ox.up)&combat_potion.ready&!buff.lights_potential.up
+    - call_action_list,name=APL,if=config.features.has(7)
+    - call_action_list,name=shadopan,if=talent.flurry_strikes&!config.features.has(7)
+    - call_action_list,name=moh,if=talent.aspect_of_harmony&!config.features.has(7)
   APL:
     - touch_of_death,name="Touch of Death (Prio 1)"
     - breath_of_fire,range_check=none,if=prev_gcd.1.keg_smash|prev_gcd.2.keg_smash
@@ -181,23 +219,3 @@ lists:
     - blackout_kick,name="Blackout Kick (Prio 36)"
     - tiger_palm,name="Tiger Palm (Prio 37)",if=talent.aspect_of_harmony&energy>50
     - tiger_palm,name="Tiger Palm (Prio 38)",if=energy>65&cooldown.blackout_kick.remains>gcd.remains
-    #- expel_harm,name="Expel Harm (Prio 39)",if=energy>30
-
-  main:
-    - call_action_list,name=spell_queue
-    - call_action_list,name=sanity_checks
-    - call_action_list,name=auto_heal
-    - call_action_list,name=auto_target
-      # user combat
-    - return,if=auto_combat.player
-    - call_action_list,name=interrupts
-    - call_action_list,name=auto_dispel
-    - call_action_list,name=defensives
-    - call_action_list,name=self_heals
-    - call_action_list,name=auto_freedom&config.features.has(3)
-        # target combat
-    - return,if=!target.alive
-    - call_action_list,name=auto_purge_enrage
-    - call_action_list,name=taunt
-    - combat_potion, if=(buff.algethar_puzzle.up|buff.invoke_niuzao_the_black_ox.up)&combat_potion.ready
-    - call_action_list,name=APL
