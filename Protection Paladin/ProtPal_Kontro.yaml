@@ -3,7 +3,7 @@ author: Kontroved
 spec: 66
 name: Protection Paladin
 description: "Protection Paladin by Kontroved"
-
+disabled: yes
 config:
   features2:
     label: "Features"
