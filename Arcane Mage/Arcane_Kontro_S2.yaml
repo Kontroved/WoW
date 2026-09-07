@@ -43,7 +43,7 @@ variables:
   steroid_trinket_equipped: equipped.lily_of_the_eternal_weave|equipped.sunblood_amethyst|equipped.astral_gladiators_badge_of_ferocity|equipped.arazs_ritual_forge|equipped.freightrunners_flask|equipped.emberwing_feather|equipped.vaelgors_final_stare|equipped.galactic_gladiators_badge_of_ferocity|equipped.nevermelting_ice_crystal|equipped.ever_collapsing_void_fissure|equipped.signet_of_the_priory|equipped.incorporeal_essencegorger|equipped.sealed_chaos_urn|equipped.venomous_gladiators_badge_of_ferocity|equipped.vile_vial_of_volatile_venom|equipped.stormbound_emblem_of_dazar
   # variable,name=nonsteroid_trinket_equipped,op=set,value=equipped.mereldars_toll|equipped.perfidious_projector|equipped.chaotic_nethergate|equipped.wraps_of_cosmic_madness|equipped.astalors_anguish_agitator|equipped.sethraliss_defiled_relic|equipped.vexhuls_everflowing_gland|equipped.font_of_venomous_rage|equipped.ophidian_bone_whistle|equipped.spiritrending_poison
   nonsteroid_trinket_equipped: equipped.mereldars_toll|equipped.perfidious_projector|equipped.chaotic_nethergate|equipped.wraps_of_cosmic_madness|equipped.astalors_anguish_agitator|equipped.sethraliss_defiled_relic|equipped.vexhuls_everflowing_gland|equipped.font_of_venomous_rage|equipped.ophidian_bone_whistle|equipped.spiritrending_poison
-  stop_casting: incoming_cast.interrupting_cloudburst.up&incoming_cast.interrupting_cloudburst.remains<=0.5
+  #stop_casting: incoming_cast.interrupting_cloudburst.up&incoming_cast.interrupting_cloudburst.remains<=0.5
   arcane_charges_pred: (arcane_charges+(player.casting.prismatic_bolt*4)+player.casting.arcane_blast)>?4
   arcane_salvo_pred: (buff.arcane_salvo.stack+(player.casting.arcane_blast*2))>?25
 lists:
