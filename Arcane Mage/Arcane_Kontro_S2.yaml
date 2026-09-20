@@ -1,4 +1,4 @@
-version: 2.2
+version: 2.3
 spec: 62
 name: "Arcane Mage by Kontro"
 author: "Kontroved"
@@ -53,8 +53,8 @@ config:
     max: 30
     default: 8
 variables:
-  end_of_pull_pooling: buff.clearcasting.remains>3&(config.end_of_pull_pooling|(config.end_of_pull_pooling_time>0&fight_remains<=config.end_of_pull_pooling_time)|cooldown.arcane_surge.remains<6)
-  prismatic_bolt_ttd: config.prismatic_bolt_ttd>0&target.time_to_die<=config.prismatic_bolt_ttd
+  end_of_pull_pooling: (!player.inraid|config.end_of_pull_pooling)&buff.clearcasting.remains>3&(config.end_of_pull_pooling|(config.end_of_pull_pooling_time>0&fight_remains<=config.end_of_pull_pooling_time)|cooldown.arcane_surge.remains<6)
+  prismatic_bolt_ttd: config.prismatic_bolt_ttd>0&target.time_to_die<=config.prismatic_bolt_ttd&!player.inraid
   orb_facing_check: config.orb_facing_check
   # local addition: manual replacement until set_bonus tracking is available
   midnight_s2_4pc: config.midnight_s2_4pc
