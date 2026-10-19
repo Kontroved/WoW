@@ -1,0 +1,158 @@
+version: 1.0
+spec: 259
+name: Assassination by Kontro S2
+author: Kontroved
+description: Assassination Rogue by Kontroved
+
+entry: main
+
+predictions:
+
+config:
+  poison_mh:
+    label: "Poison MH"
+    type: dropdown
+    options:
+      - "Numbing"
+      - "Crippling"
+      - "None"
+      - "Atrophic"
+    default: 1
+  poison_oh:
+    label: "Poison OH"
+    type: dropdown
+    options:
+      - "Instant"
+      - "Wound"
+      - "None"
+      - "Deadly"
+      - "Amplifying"
+    default: 3
+  # Dragon-Tempered Blades: second non-lethal / lethal slot
+  poison_mh_2:
+    label: "Poison MH 2 (Dragon-Tempered Blades)"
+    type: dropdown
+    options:
+      - "Numbing"
+      - "Crippling"
+      - "None"
+      - "Atrophic"
+    default: 3
+  poison_oh_2:
+    label: "Poison OH 2 (Dragon-Tempered Blades)"
+    type: dropdown
+    options:
+      - "Instant"
+      - "Wound"
+      - "None"
+      - "Deadly"
+      - "Amplifying"
+    default: 4
+  vanish_enabled:
+    label: "Auto Vanish"
+    type: checkbox
+    default: false
+  force_ST:
+      label: "force ST"
+      type: toggle
+      spell: 1329
+      default: true
+variables:
+  single_target: active_enemies=1
+  base_trinket_condition: (debuff.rupture.ticking&cooldown.deathmark.remains<2)|debuff.deathmark.up
+  blind_aoe_focus_interrupt: talent.airborne_irritant&focus.enemy&!focus.boss&focus.range<=8&((focus.incoming_cast.stunnable.up&focus.incoming_cast.stunnable.remains>gcd.remains&incoming_cast.8y.stunnable.count>=2)|(focus.incoming_cast.kickable.important.up&focus.incoming_cast.kickable.important.remains>gcd.remains&incoming_cast.8y.kickable.important.count>=3))
+  blind_aoe_mouseover_interrupt: talent.airborne_irritant&mouseover.enemy&!mouseover.boss&mouseover.range<=8&((mouseover.incoming_cast.stunnable.up&mouseover.incoming_cast.stunnable.remains>gcd.remains&incoming_cast.8y.stunnable.count>=2)|(mouseover.incoming_cast.kickable.important.up&mouseover.incoming_cast.kickable.important.remains>gcd.remains&incoming_cast.8y.kickable.important.count>=3))
+  blind_aoe_target_interrupt: talent.airborne_irritant&target.enemy&!target.boss&target.range<=8&((target.incoming_cast.stunnable.up&target.incoming_cast.stunnable.remains>gcd.remains&incoming_cast.8y.stunnable.count>=2)|(target.incoming_cast.kickable.important.up&target.incoming_cast.kickable.important.remains>gcd.remains&incoming_cast.8y.kickable.important.count>=3))
+  rogue_cc_focus_interrupt: focus.enemy&!focus.boss&((focus.incoming_cast.stunnable.up&focus.incoming_cast.stunnable.remains>gcd.remains)|(focus.incoming_cast.kickable.important.up&focus.incoming_cast.kickable.important.remains>gcd.remains))
+  rogue_cc_mouseover_interrupt: mouseover.enemy&!mouseover.boss&((mouseover.incoming_cast.stunnable.up&mouseover.incoming_cast.stunnable.remains>gcd.remains)|(mouseover.incoming_cast.kickable.important.up&mouseover.incoming_cast.kickable.important.remains>gcd.remains))
+  rogue_cc_target_interrupt: target.enemy&!target.boss&((target.incoming_cast.stunnable.up&target.incoming_cast.stunnable.remains>gcd.remains)|(target.incoming_cast.kickable.important.up&target.incoming_cast.kickable.important.remains>gcd.remains&cooldown.kick.remains>target.incoming_cast.kickable.important.remains))
+  kick_target_check: "!focus.enemy&config.interrupt_target&target.enemy&(!player.ininstancedpve&target.casting.interruptible|player.ininstancedpve&!target.boss&(config.interrupt_all&target.casting.interruptible&(target.casting.remains<1|target.channeling)|target.incoming_cast.kickable.up&(target.channeling|target.casting.important&target.casting.elapsed*100>=config.interrupt_important_pct*(target.casting.remains+target.casting.elapsed)|!target.casting.important&target.casting.elapsed*100>=config.interrupt_pct*(target.casting.remains+target.casting.elapsed))))&target.casting.elapsed>=0.2&(!target.incoming_cast.kickable.min50.up|target.casting.elapsed*100>=50*(target.casting.remains+target.casting.elapsed))"
+  kick_mouseover_check: "!focus.enemy&config.interrupt_mouseover&mouseover.enemy&(!player.ininstancedpve&mouseover.casting.interruptible|player.ininstancedpve&!mouseover.boss&(config.interrupt_all&mouseover.casting.interruptible&(mouseover.casting.remains<1|mouseover.channeling)|mouseover.incoming_cast.kickable.up&(mouseover.channeling|mouseover.casting.important&mouseover.casting.elapsed*100>=config.interrupt_important_pct*(mouseover.casting.remains+mouseover.casting.elapsed)|!mouseover.casting.important&mouseover.casting.elapsed*100>=config.interrupt_pct*(mouseover.casting.remains+mouseover.casting.elapsed))))&mouseover.casting.elapsed>=0.2&(!mouseover.incoming_cast.kickable.min50.up|mouseover.casting.elapsed*100>=50*(mouseover.casting.remains+mouseover.casting.elapsed))"
+  kick_focus_check: "config.interrupt_focus&focus.enemy&(!player.ininstancedpve&focus.casting.interruptible|player.ininstancedpve&!focus.boss&(config.interrupt_all&focus.casting.interruptible&(focus.casting.remains<1|focus.channeling)|focus.incoming_cast.kickable.up&(focus.channeling|focus.casting.important&focus.casting.elapsed*100>=config.interrupt_important_pct*(focus.casting.remains+focus.casting.elapsed)|!focus.casting.important&focus.casting.elapsed*100>=config.interrupt_pct*(focus.casting.remains+focus.casting.elapsed))))&focus.casting.elapsed>=0.2&(!focus.incoming_cast.kickable.min50.up|focus.casting.elapsed*100>=50*(focus.casting.remains+focus.casting.elapsed))"
+  cc_target_check: "!focus.enemy&config.interrupt_target&target.enemy&!target.boss&(!player.ininstancedpve&target.classification<6&(target.casting|target.channeling)|player.ininstancedpve&target.incoming_cast.stunnable.up)&target.casting.elapsed>=0.75"
+  spread_improved: var.garrote_empowered_snapshot&(cluster.debuff.garrote.highest>=cluster.debuff.garrote.lowest+0.5)
+  spread_garrote: ((cluster.debuff.garrote.highest>=cluster.debuff.garrote.lowest+0.5)|(enemies.around_target>cluster.debuff.garrote.count))&cluster.debuff.garrote.count>=1
+  spread_rupture: ((cluster.debuff.rupture.highest>=cluster.debuff.rupture.lowest+0.5)|(enemies.around_target>cluster.debuff.rupture.count))&cluster.debuff.rupture.count>=1
+  spread_dots: (var.spread_garrote|var.spread_rupture)&cluster.debuff.rupture.count>=1&cluster.debuff.garrote.count>=1
+lists:
+  main:
+    - call_action_list,name=tracking
+    - call_action_list,name=spell_queue
+    - call_action_list,name=sanity_checks
+    - call_action_list,name=auto_target
+    - call_action_list,name=auto_heal
+    - call_action_list,name=auto_dispel
+    - call_action_list,name=precombat,if=!player.combat
+    - call_action_list,name=interrupts
+    - call_action_list,name=tracking
+    - garrote,if=buff.stealth.up|prev_gcd.1.vanish|prev_gcd.2.vanish
+    - return,if=!target.combat|target.dead|buff.stealth.up
+    - return,if=player.channeling|player.casting
+    - thistle_tea,if=energy.pct<30
+    - ambush,if=buff.stealth.up&var.single_target&talent.blindside&talent.improved_ambush&!talent.shrouded_suffocation
+    - mark_for_death,after=500,if=talent.deathstalkers_mark&nameplates.debuff.deathstalkers_mark.count>=1&debuff.deathstalkers_mark.down
+    - call_action_list,name=cds,if=var.single_target|!talent.scent_of_blood|buff.scent_of_blood.stack>=(2*talent.scent_of_blood.rank*active_enemies>?20)
+    - call_action_list,name=core_dot
+    - call_action_list,name=generate,if=!buff.darkest_night.up&combo_points<5|buff.darkest_night.up&combo_points.deficit>0
+    - call_action_list,name=spend,if=!buff.darkest_night.up&combo_points>=5|buff.darkest_night.up&combo_points.deficit=0
+  tracking:
+    - variable,name=garrote_empowered_snapshot,value=1,if=var.single_target&debuff.garrote.ticking&buff.improved_garrote.up&lastcast.garrote<gcd
+    - variable,name=garrote_empowered_snapshot,value=0,if=var.single_target&debuff.garrote.ticking&buff.improved_garrote.down&lastcast.garrote<gcd
+    - variable,name=garrote_empowered_snapshot,value=0,if=debuff.garrote.down
+  precombat:
+    - tricks_of_the_trade,delay=4000,range_check=none,if=(group.count(cycle.tank&cycle.range<40)=1&talent.so_tricky&buff.tricks_of_the_trade.down)&!player.inraid
+    - deadly_poison,range_check=none,if=(config.poison_oh=3|talent.381801&config.poison_oh_2=3)&pred.buff.deadly_poison.remains<120&!player.combat
+    - amplifying_poison,range_check=none,if=(config.poison_oh=4|talent.381801&config.poison_oh_2=4)&pred.buff.amplifying_poison.remains<120&!player.combat
+    - instant_poison,range_check=none,if=(config.poison_oh=0|talent.381801&config.poison_oh_2=0)&pred.buff.instant_poison.remains<120&!player.combat
+    - wound_poison,range_check=none,if=(config.poison_oh=1|talent.381801&config.poison_oh_2=1)&pred.buff.wound_poison.remains<120&!player.combat
+    - numbing_poison,range_check=none,if=(config.poison_mh=0|talent.381801&config.poison_mh_2=0)&pred.buff.numbing_poison.remains<120&!player.combat
+    - crippling_poison,range_check=none,if=(config.poison_mh=1|talent.381801&config.poison_mh_2=1)&pred.buff.crippling_poison.remains<120&!player.combat
+    - atrophic_poison,range_check=none,if=(config.poison_mh=3|talent.381801&config.poison_mh_2=3)&pred.buff.atrophic_poison.remains<120&!player.combat
+    - stealth,range_check=none,delay=100,if=buff.stealth.down
+    - slice_and_dice,range_check=none,if=combo_points>=1&buff.slice_and_dice.down
+
+  interrupts:
+    - blind,interrupt=true,if=var.blind_aoe_target_interrupt&!player.inraid
+    - kick,interrupt=true,if=interrupt.target.check
+    - kick.mouseover,interrupt=true,if=interrupt.mouseover.check
+    - kick.focus,range_check=none,interrupt=true,if=interrupt.focus.check
+    - kick.focus,range_check=none,interrupt=true,if=var.send_kick_key
+    - kidney_shot,if=(interrupt.cc.check&(target.casting.remains<gcd|target.channeling)&!player.inraid)&!interrupt.kick.soon
+    - blind,if=((interrupt.cc.check|(target.enemy&!target.boss&incoming_cast.8y.stunnable.count>=2))&!player.inraid)&!interrupt.kick.soon
+  cds:
+    - deathmark,if=debuff.garrote.up&debuff.rupture.up&cooldown.kingsbane.remains<=2&buff.envenom.remains>2
+    - call_action_list,name=items,if=state.cds
+    - call_action_list,name=misc_cds,if=state.cds
+    - kingsbane,if=debuff.garrote.up&debuff.rupture.up&(debuff.deathmark.up|cooldown.deathmark.remains>52)&buff.envenom.up
+    - call_action_list,name=vanish,if=buff.stealth.down&state.cds&config.vanish_enabled
+
+  core_dot:
+    - garrote,if=prev_gcd.1.vanish|prev_gcd.2.vanish
+    - garrote,if=(buff.improved_garrote.up|buff.stealth.up)&(debuff.garrote.down|(buff.improved_garrote.up&debuff.garrote.elapsed>buff.improved_garrote.elapsed)|debuff.garrote.remains<=14+6*talent.razor_wire+4*!var.single_target)
+    - garrote,if=combo_points.deficit>=1&(!var.single_target|!var.garrote_empowered_snapshot)&debuff.garrote.refreshable&cluster.debuff.garrote.highest<=8
+    - rupture,if=combo_points>=5&debuff.rupture.refreshable&(!buff.darkest_night.up|!debuff.rupture.ticking)&(cluster.debuff.rupture.highest<=12|cluster.debuff.rupture.count<1)
+  generate:
+    - crimson_tempest,range_check=none,if=enemies.around.angle.180.10>=2&var.spread_dots 
+    - shiv,if=enemies.around.angle.180.10<=1&talent.toxic_stiletto&talent.darkest_night
+    - mutilate,if=config.force_ST
+    - fan_of_knives,if=buff.darkest_night.up&combo_points.deficit=1&enemies.around.angle.180.8<=1&!config.force_ST
+    - fan_of_knives,if=enemies.around.angle.180.8>1+(talent.blindside&!talent.clear_the_witnesses)&!config.force_ST
+    - ambush,if=enemies.around.angle.180.8<=1+(talent.blindside&!talent.clear_the_witnesses)
+    - mutilate,if=enemies.around.angle.180.8<=1+(talent.blindside&!talent.clear_the_witnesses)
+  items:
+    - use_item,name=astral_gladiators_badge_of_ferocity,use_off_gcd=1,if=debuff.kingsbane.up|debuff.deathmark.up|(cooldown.kingsbane.remains>60|cooldown.deathmark.remains>60)
+    - use_item,name=font_of_venomous_rage,use_off_gcd=1,if=buff.lingering_darkness.up|!debuff.deathmark.up&cooldown.deathmark.down&cooldown.deathmark.remains>20
+    - trinket_1,if=trinket_1.usable&debuff.deathmark.up
+    - trinket_2,if=trinket_2.usable&debuff.deathmark.up
+  misc_cds:
+    - blood_fury,use_off_gcd=1,if=debuff.deathmark.up
+    - berserking,use_off_gcd=1,if=debuff.deathmark.up
+    - fireblood,use_off_gcd=1,if=debuff.deathmark.up
+    - ancestral_call,use_off_gcd=1,if=debuff.deathmark.up
+  spend:
+    - envenom,if=(buff.envenom.remains<=1&buff.envenom.up)|debuff.deathmark.up
+    - envenom,if=energy.pct>70
+    - envenom,if=energy.pct>30&enemies.around.angle.180.8>=4
+  vanish:
+    - vanish,range_check=none,if=var.single_target&talent.improved_garrote&!var.garrote_empowered_snapshot
+    - vanish,range_check=none,if=!var.garrote_empowered_snapshot&!var.single_target&talent.improved_garrote
